@@ -1,16 +1,16 @@
 # Nomoredoom
 
-You open Instagram to answer one message. Forty minutes later you are still
-on Reels.
+I don't like doom scrolling while I'm working, so blocking short videos is
+how I stop it. It keeps me focused on the task at hand.
 
-Nomoredoom is a small Android app that counts the minutes you spend in
-Instagram Reels, YouTube Shorts and TikTok. For the first 10 minutes it does
-nothing. After that it puts a meme over the video, and each one takes longer
-to close than the last. At 20 minutes it sends you to the home screen.
+Nomoredoom is a small Android app that does the blocking. While Claude Code is
+working on your computer, Instagram Reels, YouTube Shorts and TikTok are
+covered by one card that plays memes one after another. The card has no X, and
+it goes away when Claude is done.
 
-While Claude Code is working on your computer, you get no 10 minutes at all.
-Reels, Shorts and TikTok are covered by one card that plays the memes one
-after another, and it goes away when Claude is done.
+The rest of the time you get 10 minutes of short videos. After that the app
+puts a meme over the video, and each one takes longer to close than the last.
+At 20 minutes it sends you to the home screen.
 
 Installing it takes an AI agent that can reach your phone. One that runs on
 the phone itself can, like Hermes inside Termux. So can one on your computer,
