@@ -21,13 +21,16 @@ import io.github.mendypf.nomoredoom.core.Clock
 import io.github.mendypf.nomoredoom.core.day
 import java.util.TimeZone
 
-/** The app's one screen: is it on, how much of the limit is used, and the two settings. */
+/** The app's one screen: is it on, what it covers, and the popups with their settings. */
 class MainActivity : Activity() {
 
     private lateinit var store: Store
     private lateinit var status: TextView
     private lateinit var statusDetail: TextView
     private lateinit var offBlock: View
+    private lateinit var sittingBlock: View
+    private lateinit var popupsBlock: View
+    private lateinit var popups: Switch
     private lateinit var sitting: TextView
     private lateinit var sittingBar: ProgressBar
     private lateinit var sittingNote: TextView
@@ -44,6 +47,9 @@ class MainActivity : Activity() {
         status = findViewById(R.id.status)
         statusDetail = findViewById(R.id.status_detail)
         offBlock = findViewById(R.id.off_block)
+        sittingBlock = findViewById(R.id.sitting_block)
+        popupsBlock = findViewById(R.id.popups_block)
+        popups = findViewById(R.id.popups)
         sitting = findViewById(R.id.sitting)
         sittingBar = findViewById(R.id.sitting_bar)
         sittingNote = findViewById(R.id.sitting_note)
@@ -59,6 +65,10 @@ class MainActivity : Activity() {
         findViewById<View>(R.id.limit_less).setOnClickListener { stepLimit(-1) }
         findViewById<View>(R.id.limit_more).setOnClickListener { stepLimit(+1) }
         sendHome.setOnCheckedChangeListener { _, checked -> store.sendHome = checked }
+        popups.setOnCheckedChangeListener { _, checked ->
+            store.popups = checked
+            render()
+        }
         demo.setOnClickListener {
             val service = Live.service
             if (service == null) toast(R.string.demo_needs_on) else service.startDemo()
@@ -80,8 +90,19 @@ class MainActivity : Activity() {
     private fun render() {
         val on = isSwitchedOn()
         status.setText(if (on) R.string.status_on else R.string.status_off)
-        statusDetail.setText(if (on) R.string.status_on_detail else R.string.status_off_detail)
+        val popupsOn = store.popups
+        statusDetail.setText(
+            when {
+                !on -> R.string.status_off_detail
+                store.agentUrl != null -> R.string.status_on_linked
+                popupsOn -> R.string.status_on_detail
+                else -> R.string.status_on_unlinked
+            },
+        )
         offBlock.visibility = if (on) View.GONE else View.VISIBLE
+        if (popups.isChecked != popupsOn) popups.isChecked = popupsOn
+        sittingBlock.visibility = if (popupsOn) View.VISIBLE else View.GONE
+        popupsBlock.visibility = if (popupsOn) View.VISIBLE else View.GONE
 
         val clock = now()
         val state = Live.service?.snapshot ?: store.loadState()

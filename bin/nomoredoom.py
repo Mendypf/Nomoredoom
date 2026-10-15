@@ -6,7 +6,7 @@
     python bin/nomoredoom.py doctor          what is ready and what is missing
     python bin/nomoredoom.py install         put the app on the phone and switch it on
     python bin/nomoredoom.py status          what the app sees right now
-    python bin/nomoredoom.py set limit 15    minutes of short videos before the popups
+    python bin/nomoredoom.py set popups on   popups after 10 minutes of short videos (off unless switched on)
     python bin/nomoredoom.py gags push       copy the popups' GIFs and lines to the phone
     python bin/nomoredoom.py agent link      cover the videos while Claude Code is working
     python bin/nomoredoom.py disconnect      when you are done: switch Wireless debugging off on the phone
@@ -552,7 +552,7 @@ def status(phone: Phone) -> dict:
 
 
 STATUS_FIELDS = (
-    "version", "connected", "watching", "covered", "safe", "sitting_s", "limit_min", "fresh_min", "send_home", "speed",
+    "version", "connected", "watching", "covered", "safe", "sitting_s", "limit_min", "fresh_min", "send_home", "popups", "speed",
     "card", "drawn", "line", "gif", "card_box", "gif_box", "close_at", "close", "gags", "gifs_on_phone", "today_s",
     "rules", "packages", "reel", "agent", "agent_busy", "agent_check", "agent_answer_s", "look",
 )
@@ -798,7 +798,11 @@ def cmd_doctor(args: argparse.Namespace) -> int:
         lines.append("NOT READY  switched on in settings, but Android is not running it. Open Settings > Accessibility > Nomoredoom.")
         return finish(args, report, lines)
     report.update(status=info, ready=True)
-    lines.append(f"ok         running. Limit {info.get('limit_min')} min, {int(info.get('sitting_s', 0)) // 60} min used this sitting")
+    if info.get("popups") == "true":
+        lines.append(f"ok         running. Limit {info.get('limit_min')} min, {int(info.get('sitting_s', 0)) // 60} min used this sitting")
+    else:
+        lines.append("ok         running. It covers the videos while the agent works"
+                     + ("" if info.get("agent") == "linked" else ", once it is linked: run agent link"))
     return finish(args, report, lines)
 
 
@@ -959,7 +963,13 @@ def cmd_install(args: argparse.Namespace) -> int:
     put_on(phone, apk, args.replace)
     switch_on(phone)
     info = wait_until_running(phone)
-    print(f"Nomoredoom {info.get('version')} is on. Limit: {info.get('limit_min')} minutes of Reels, Shorts and TikTok per sitting.")
+    if info.get("popups") == "true":
+        print(f"Nomoredoom {info.get('version')} is on. Limit: {info.get('limit_min')} minutes of Reels, Shorts and TikTok per sitting.")
+    elif info.get("agent") == "linked":
+        print(f"Nomoredoom {info.get('version')} is on. It covers Reels, Shorts and TikTok while Claude Code is working.")
+    else:
+        print(f"Nomoredoom {info.get('version')} is on. It covers Reels, Shorts and TikTok while Claude Code is working, "
+              "once this computer is linked: python bin/nomoredoom.py agent link")
     print("Its accessibility service was switched on from here, so Android's own 'full control' box did not show "
           "on the phone. What the app can see with that service is in the README, under 'What it can see'.")
     if not args.no_gifs and DEFAULT_GAGS.is_file():
@@ -1112,7 +1122,10 @@ def cmd_status(args: argparse.Namespace) -> int:
     else:
         used = int(info.get("sitting_s", 0))
         print(f"watching now : {info.get('watching')}")
-        print(f"this sitting : {used // 60}:{used % 60:02d} of {info.get('limit_min')}:00")
+        if info.get("popups") == "true":
+            print(f"this sitting : {used // 60}:{used % 60:02d} of {info.get('limit_min')}:00")
+        else:
+            print("popups       : off (python bin/nomoredoom.py set popups on)")
         print(f"on screen    : {on_screen(info)}")
         print(f"gifs on phone: {info.get('gifs_on_phone', '0')} ({info.get('gags')} jokes)")
         print(f"today        : {info.get('today_s') or 'nothing yet'} (seconds)")
@@ -1125,10 +1138,10 @@ def cmd_status(args: argparse.Namespace) -> int:
 
 def cmd_set(args: argparse.Namespace) -> int:
     phone = connect(args)
-    if args.name == "home":
+    if args.name in ("home", "popups"):
         if args.value not in ("on", "off"):
-            raise Problem("home takes on or off")
-        reply = send(phone, "--ez", "home", "true" if args.value == "on" else "false")
+            raise Problem(f"{args.name} takes on or off")
+        reply = send(phone, "--ez", args.name, "true" if args.value == "on" else "false")
     else:
         if not args.value.isdigit():
             raise Problem(f"{args.name} takes a number of minutes")
@@ -1770,8 +1783,8 @@ def main(argv: list[str] | None = None) -> int:
     p = add("status", cmd_status, "what the app sees right now")
     p.add_argument("--json", action="store_true")
 
-    p = add("set", cmd_set, "change a setting: limit MINUTES, fresh MINUTES, home on|off")
-    p.add_argument("name", choices=["limit", "fresh", "home"])
+    p = add("set", cmd_set, "change a setting: popups on|off, limit MINUTES, fresh MINUTES, home on|off")
+    p.add_argument("name", choices=["popups", "limit", "fresh", "home"])
     p.add_argument("value")
 
     add("demo", cmd_demo, "play the popups once on the phone")

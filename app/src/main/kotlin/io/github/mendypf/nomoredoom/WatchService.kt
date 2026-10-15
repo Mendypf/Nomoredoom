@@ -191,6 +191,7 @@ class WatchService : AccessibilityService() {
         writer.println("limit_min=${store.limitMinutes}")
         writer.println("fresh_min=${store.freshMinutes}")
         writer.println("send_home=${store.sendHome}")
+        writer.println("popups=${store.popups}")
         writer.println("speed=$speed")
         writer.println("card=" + when (state.card) {
             null -> "-"

@@ -1,6 +1,6 @@
 ---
 name: "nomoredoom"
-description: "Put Nomoredoom on someone's Android phone and look after it: an app that counts their minutes in Instagram Reels, YouTube Shorts and TikTok and shows meme popups that take longer to close after 10 minutes, and covers them completely while their Claude Code is working. Use when someone asks to install it, change the limit, change the memes, block the videos while their agent works, switch it off, see how much they watched, or says Reels, Shorts or TikTok is no longer being noticed."
+description: "Put Nomoredoom on someone's Android phone and look after it: an app that covers Instagram Reels, YouTube Shorts and TikTok completely while their Claude Code is working, with meme popups after a time limit built in but off unless they ask for them. Use when someone asks to install it, block the videos while their agent works, switch the popups on, change the limit, change the memes, switch it off, see how much they watched, or says Reels, Shorts or TikTok is no longer being noticed."
 metadata: { "includeInPrompt": true }
 ---
 
@@ -8,10 +8,10 @@ metadata: { "includeInPrompt": true }
 
 ## Purpose
 Nomoredoom is a 78 KB Android app. It is one accessibility service that Android wakes only for changes in Instagram,
-YouTube or TikTok. It counts the time a short-video player is in front and, past the limit, draws popups over it:
-a card with a meme GIF, the minutes stamped on it, one line, and an X that is a countdown first.
-Linked to the person's coding agent, it also covers those videos the whole time the agent is working: one card with
-no X that plays every GIF in turn and goes when the agent is done.
+YouTube or TikTok. Linked to the person's coding agent, it covers those videos the whole time the agent is working:
+one card with no X that plays every meme GIF in turn and goes when the agent is done. The rest of the time it leaves
+the videos alone. Popups past a time limit are built in too, off unless the person asks for them: a card with a meme
+GIF, the minutes stamped on it, one line, and an X that is a countdown first.
 You install it and talk to it through adb, the door Android keeps for programs. The person does not open Android
 Studio or build anything.
 
@@ -47,6 +47,8 @@ Commands:
   40 MB, kept in `~/.cache/nomoredoom`) and copies them to the phone.
 - `status [--json]` what the app sees right now. `watching now` is the short-video screen in front, or `-`. `on screen`
   is what Nomoredoom is drawing: nothing, the small note at the top, or a card. `--json` adds the card's line.
+- `set popups on|off`: the popups past a time limit (default off). The three settings below only matter while they
+  are on.
 - `set limit MINUTES` (1 to 180, default 10), `set fresh MINUTES` (how long away before the count starts over, 5 to 720,
   default 60), `set home on|off` (send the person to the home screen 10 minutes past the limit, default on).
 - `demo` plays a small note and three sample popups on the phone, about 20 seconds in all. Nothing is counted.
@@ -68,8 +70,8 @@ Commands:
 For an agent on the phone itself (inside Termux) or on a computer on the same Wi-Fi as the phone. Nothing plugs in. It
 uses Android's Wireless debugging, which needs Android 11 or newer and the phone on Wi-Fi.
 1. Say what is about to happen, then ask two things and wait for both answers. Tell the person:
-   - A small app goes onto the phone. It counts their minutes in Reels, Shorts and TikTok, and after 10 minutes it
-     puts popups over the video.
+   - A small app goes onto the phone. While Claude Code (or another coding agent) works on their computer, it covers
+     Reels, Shorts and TikTok with one card of memes. The rest of the time it leaves them alone.
    - You switch on Android's accessibility service for it from here. Done by hand, Android shows a box at that point
      saying such a service can view and control the screen. On this path the box does not show, so say it now. This
      service asks those three apps which screen is in front. It asks for no text. Its one permission is internet,
@@ -105,17 +107,18 @@ uses Android's Wireless debugging, which needs Android 11 or newer and the phone
    ask "Install via USB". On "signed with a different key", ask before `--replace`: it removes the old copy and its
    count.
 6. Show them it works.
-   - Ask the person to watch the phone, then run `demo`. For about 20 seconds it shows a small note at the top and
-     then three sample popups. Ask what they saw. If they saw nothing, run `demo` again and `status` while it plays:
-     `on screen` names what Nomoredoom is drawing. Tell them what it says and ask them to look again.
    - Ask them to open Reels, Shorts or TikTok, then run `status`. `watching now` should name it within a few seconds.
      If it stays `-` on a short video, go to "an app stopped being noticed".
+   - Link it: steps 1 to 3 of "Workflow: cover the videos while the agent works", now, while the phone is in reach.
+     Until it is linked the app covers nothing. If they say no, tell them that.
 7. Close up. Run `disconnect`. Do this every time, also when the install failed, unless the person asks you to leave
    the setting on. Exit code 0 means the tool saw Wireless debugging go off. On 1 or 2 it did not: ask the person to
    look at Settings > System > Developer options > Wireless debugging, and wait until they say it is off. After
    `disconnect` the phone is out of reach on purpose, so a `doctor` that finds no phone is what that looks like.
 8. Tell the person, in your own words:
    - what is on the phone now: one app, with one accessibility service switched on for it;
+   - that it covers the videos only while their agent works, and that the popups after a time limit are off until
+     they ask for them;
    - that Wireless debugging is off again, and that Nomoredoom keeps running without it;
    - that this program is still on the phone's list of paired devices, that the list does nothing while the setting
      is off, and how to erase the entry (`disconnect` printed the steps);
@@ -179,6 +182,12 @@ or Wireless debugging as in the install).
 `agent unlink` undoes it: it takes the hooks out of the settings file and, with the phone in reach, the address off
 the phone.
 
+## Workflow: popups after a time limit
+Only when the person asks for them. `set popups on`, then `demo` while they watch the phone: for about 20 seconds it
+shows a small note at the top and then three sample popups. Ask what they saw. If they saw nothing, run `demo` again
+and `status` while it plays: `on screen` names what Nomoredoom is drawing. `set limit`, `set fresh` and `set home`
+change them. `set popups off` takes them away again.
+
 ## Workflow: change the memes
 The jokes are one text file, `app/src/main/res/raw/gags.txt`. One line is one popup:
 `minutes past the limit | the line | a giphy.com/gifs/ link or a GIF file next to this file | stamp=bottom-left`.
@@ -209,8 +218,9 @@ this way.
 5. Offer to open a pull request with the new name so the next person gets it.
 
 ## Operating Rules
-1. The limit is the person's promise to themselves. Raise it, switch the app off or uninstall it only when they ask for
-   that in so many words. Never do it to make a test pass or a complaint go away.
+1. The person's settings are their promise to themselves. Raise the limit, switch the popups or the app off, unlink
+   it or uninstall it only when they ask for that in so many words. Never do it to make a test pass or a complaint
+   go away.
 2. Do not run `uiautomator dump`, Appium or any other screen-automation tool while checking Nomoredoom. Android pauses
    every accessibility service while one of those is connected, so Nomoredoom sees nothing and looks broken. Use
    `status` and `tree`.

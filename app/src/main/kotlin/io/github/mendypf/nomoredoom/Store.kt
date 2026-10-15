@@ -30,6 +30,11 @@ internal class Store(context: Context) {
         get() = prefs.getBoolean(HOME, true)
         set(value) = prefs.edit().putBoolean(HOME, value).apply()
 
+    /** The popups past the limit. Off unless switched on: the app then only covers the videos while the agent works. */
+    var popups: Boolean
+        get() = prefs.getBoolean(POPUPS, false)
+        set(value) = prefs.edit().putBoolean(POPUPS, value).apply()
+
     /** A rules file pushed from a computer; null means the one built into the app. */
     var rulesText: String?
         get() = prefs.getString(RULES, null)
@@ -49,6 +54,7 @@ internal class Store(context: Context) {
         limitMs = limitMinutes * 60_000L,
         freshAfterMs = freshMinutes * 60_000L,
         sendHome = sendHome,
+        popups = popups,
         speed = speed,
     )
 
@@ -66,6 +72,7 @@ internal class Store(context: Context) {
         private const val LIMIT = "limit_minutes"
         private const val FRESH = "fresh_minutes"
         private const val HOME = "send_home"
+        private const val POPUPS = "popups"
         private const val RULES = "rules"
         private const val GAGS = "gags"
         private const val STATE = "state"

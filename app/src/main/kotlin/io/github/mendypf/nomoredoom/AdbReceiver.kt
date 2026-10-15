@@ -53,6 +53,10 @@ class AdbReceiver : BroadcastReceiver() {
             store.sendHome = extras.getBoolean("home")
             done += "home=${store.sendHome}"
         }
+        if (extras.containsKey("popups")) {
+            store.popups = extras.getBoolean("popups")
+            done += "popups=${store.popups}"
+        }
         if (extras.containsKey("rules_b64")) {
             val encoded = extras.getString("rules_b64").orEmpty()
             if (encoded.isEmpty()) {
@@ -133,7 +137,7 @@ class AdbReceiver : BroadcastReceiver() {
             }
         }
         require(done.isNotEmpty()) {
-            "nothing to do: pass limit, fresh, home, rules_b64, gags_b64, gags_dir, agent_url, speed, skip_s, reset or demo"
+            "nothing to do: pass limit, fresh, home, popups, rules_b64, gags_b64, gags_dir, agent_url, speed, skip_s, reset or demo"
         }
         return done.joinToString(" ")
     }

@@ -8,9 +8,7 @@ working on your computer, Instagram Reels, YouTube Shorts and TikTok are
 covered by one card that plays memes one after another. The card has no X, and
 it goes away when Claude is done.
 
-The rest of the time you get 10 minutes of short videos. After that the app
-puts a meme over the video, and each one takes longer to close than the last.
-At 20 minutes it sends you to the home screen.
+The rest of the time it leaves your videos alone.
 
 Installing it takes an AI agent that can reach your phone. One that runs on
 the phone itself can, like Hermes inside Termux. So can one on your computer,
@@ -19,12 +17,16 @@ from this repo. It puts a 78 KB app on the phone and switches it on. You never
 open Android Studio. Your part, once: you switch on one setting and read the
 agent a six-digit code.
 
+## Popups after a time limit
+
+These are off unless you switch them on, with
+`python bin/nomoredoom.py set popups on` or the switch on the app's screen.
+Then they come up whenever you watch, not only while Claude works.
+
 <p>
   <img src="docs/card.png" width="230" alt="A card over a short video: 11 minutes, the line You said one more, and an X in the top right corner">
   <img src="docs/call-banner.png" width="230" alt="The same card moved down the screen to leave an incoming call banner free">
 </p>
-
-## What happens after 10 minutes
 
 | Minutes of short videos | What you get |
 |---|---|
@@ -98,8 +100,7 @@ asks the topic whether any session is working: once when it opens, then every
 10 seconds. When one is, the card comes up within a few seconds. It has no
 X, it plays every GIF on the phone for 4 seconds each under the line "Stop
 doom scrolling", and it asks Android to pause the video's sound. About 10
-seconds after Claude finishes, it is gone and the normal count carries on.
-Time under the card is not counted.
+seconds after Claude finishes, it is gone.
 
 Stopping Claude yourself counts as finished too: Esc in the terminal, or the
 stop button in VS Code or the desktop app. Claude Code runs no hook for that,
@@ -117,7 +118,7 @@ that posts "working" again every 8 minutes.
 ntfy.sh takes 250 messages a day from one internet address. A turn that uses
 tools costs two, plus one for every 8 minutes it runs, so about 100 such turns
 fit in a day. Past that, the posts are turned away until the next day and the
-phone goes back to the normal count. You can use a ntfy server of your own
+videos are not covered. You can use a ntfy server of your own
 with `agent link --server https://your.server`.
 
 Another agent can do the same with `agent send working` and `agent send done`.
@@ -129,6 +130,10 @@ Another agent can do the same with `agent send working` and `agent send done`.
 Tell the agent:
 
 > Install Nomoredoom on my phone. The steps are in SKILL.md.
+
+The agent also links the phone to Claude Code, after it asks you, because that
+step adds three hooks to your Claude Code settings. Until it is linked the app
+covers nothing.
 
 The agent needs a way to the phone, and there are three:
 
@@ -198,6 +203,7 @@ screen walks you through it.
 
 ```bash
 python bin/nomoredoom.py status         # what it sees right now and minutes used
+python bin/nomoredoom.py set popups on  # popups after a time limit (off unless switched on)
 python bin/nomoredoom.py set limit 15   # minutes before the first popup (1 to 180)
 python bin/nomoredoom.py set fresh 90   # minutes away before the count starts over
 python bin/nomoredoom.py set home off   # never send me to the home screen
@@ -205,7 +211,8 @@ python bin/nomoredoom.py off            # switch it off; the app stays installed
 python bin/nomoredoom.py uninstall
 ```
 
-The limit and the home-screen switch are also on the app's own screen.
+The popups, the limit and the home-screen switch are also on the app's own
+screen.
 
 ## What it can see
 
@@ -367,7 +374,7 @@ TikTok is counted as a whole app, so it does not break this way.
   with a real Claude Code session posting through ntfy.sh. I have not yet run
   it against the three apps themselves on a phone.
 - The card for while Claude Code works covers a turn, not a whole session.
-  While Claude waits for your answer, the normal count applies.
+  While Claude waits for your answer, the videos are not covered.
 
 ## Build it yourself
 

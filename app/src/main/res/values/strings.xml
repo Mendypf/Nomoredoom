@@ -3,8 +3,8 @@
     <string name="app_name">Nomoredoom</string>
 
     <!-- Shown by Android on its own Accessibility settings screen. -->
-    <string name="service_summary">Popups after your limit of short videos</string>
-    <string name="service_description">Counts the minutes you spend in Instagram Reels, YouTube Shorts and TikTok. Past your limit it shows popups that take longer to close each time. Android only wakes it for those three apps. It goes online for one thing only, and only if a computer linked it: to ask whether your coding agent is working.</string>
+    <string name="service_summary">Covers short videos while your coding agent works</string>
+    <string name="service_description">Covers Instagram Reels, YouTube Shorts and TikTok while your coding agent is working on your computer. Popups after a time limit can be switched on too. Android only wakes it for those three apps. It goes online for one thing only, and only if a computer linked it: to ask whether your coding agent is working.</string>
 
     <!-- The popups. -->
     <plurals name="minutes">
@@ -31,6 +31,8 @@
     <!-- The one screen of the app. -->
     <string name="status_on">On</string>
     <string name="status_on_detail">Counting Reels, Shorts and TikTok.</string>
+    <string name="status_on_linked">Covers Reels, Shorts and TikTok while your coding agent works.</string>
+    <string name="status_on_unlinked">Not linked to a coding agent yet. Your agent links it with agent link.</string>
     <string name="status_off">Off</string>
     <string name="status_off_detail">Turn it on in Accessibility settings. It is listed as Nomoredoom.</string>
     <string name="turn_on">Open Accessibility settings</string>
@@ -58,6 +60,7 @@
     <!-- In quotes, or Android drops the spaces around the dot. -->
     <string name="today_separator" translatable="false">" · "</string>
 
+    <string name="popups_title">Popups after a time limit</string>
     <string name="limit_title">Limit</string>
     <string name="limit_less">Lower the limit</string>
     <string name="limit_more">Raise the limit</string>

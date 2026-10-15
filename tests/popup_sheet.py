@@ -57,7 +57,7 @@ def start():
     phone.shell(f"am start -n com.google.android.youtube/{FAKE} --es screen short")
 
 
-cli.send(phone, "--ez", "reset", "true")
+cli.send(phone, "--ez", "reset", "true", "--ez", "popups", "true")
 start()
 time.sleep(2.5)
 shots = []
@@ -82,7 +82,7 @@ for item in wanted:
         if int(minutes) >= limit + 10:
             wait(lambda s: s.get("drawn") == "-", 8)
 phone.shell("input keyevent KEYCODE_HOME")
-cli.send(phone, "--ez", "reset", "true")
+cli.send(phone, "--ez", "reset", "true", "--ez", "popups", "false")
 
 shots.sort()
 thumb_w, thumb_h, pad, label = 300, 667, 14, 44

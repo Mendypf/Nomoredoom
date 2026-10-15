@@ -14,6 +14,11 @@ public data class Settings(
     val limitMs: Long = 10 * 60_000L,
     val freshAfterMs: Long = 60 * 60_000L,
     val sendHome: Boolean = true,
+    /**
+     * The popups past the limit. Off unless the person switches them on: then the app only covers the videos
+     * while their coding agent works.
+     */
+    val popups: Boolean = false,
     /** Test hook: every watched second counts this many times. */
     val speed: Int = 1,
 )
@@ -178,6 +183,8 @@ public object Engine {
             return Outcome(s, draw(s, settings))
         }
         if (s.card is Card.Busy) s = s.copy(card = null, cardVisible = false, cardShownUp = null)
+        // Popups switched off while one was up: it goes too.
+        if (!settings.popups && s.card != null) s = s.copy(card = null, cardVisible = false, cardShownUp = null)
 
         val rung = rungFor(s, settings)
 
@@ -224,7 +231,7 @@ public object Engine {
     }
 
     private fun rungFor(s: State, settings: Settings): Rung? =
-        Ladder.rungAt(s.watchedMs - settings.limitMs, settings.sendHome)
+        if (settings.popups) Ladder.rungAt(s.watchedMs - settings.limitMs, settings.sendHome) else null
 
     private fun dueCard(s: State, rung: Rung): Card? {
         val id = s.seq + 1

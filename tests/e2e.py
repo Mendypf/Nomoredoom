@@ -184,7 +184,9 @@ def main() -> int:
 
     cli.switch_on(phone)
     cli.wait_until_running(phone)
-    cli.send(phone, "--ei", "limit", "10", "--ei", "fresh", "60", "--ez", "home", "true", "--es", "rules_b64", '""')
+    run.check("the popups are off as the app comes", run.app().get("popups") == "false", str(run.app().get("popups")))
+    cli.send(phone, "--ez", "popups", "true", "--ei", "limit", "10", "--ei", "fresh", "60", "--ez", "home", "true",
+             "--es", "rules_b64", '""')
     cli.clear_gags(phone)  # the built-in lines, no GIFs, until the section that tests them
     cli.send(phone, "--ei", "speed", "1", "--ez", "reset", "true")
     run.home()
@@ -460,7 +462,7 @@ def main() -> int:
         pack = Path(folder) / "gags.txt"
         pack.write_text("+1 | Wide one. | wide.gif\n+2 | Tall one. | tall.gif\n", encoding="utf-8")
         cli.push_gags(phone, pack)
-    cli.send(phone, "--ez", "reset", "true", "--es", "agent_url", '""')
+    cli.send(phone, "--ez", "reset", "true", "--ez", "popups", "false", "--es", "agent_url", '""')
     run.open(YOUTUBE, "short")
     run.wait("not linked: Shorts plays as before", lambda s: s.get("watching") == "Shorts" and s.get("agent") == "-")
     time.sleep(3)
@@ -505,6 +507,16 @@ def main() -> int:
     run.home()
     cli.send(phone, "--es", "agent_url", '""')
     run.check("unlinked", run.app().get("agent") == "-")
+    run.open(YOUTUBE, "short")
+    run.wait("popups off and no agent: Shorts plays", lambda s: s.get("watching") == "Shorts")
+    run.skip("25:00")
+    time.sleep(4)
+    state = run.app()
+    run.check("popups off: 25 minutes in, nothing covers Shorts",
+              state.get("drawn") == "-" and state.get("watching") == "Shorts", str(state))
+    run.check("and nobody is sent home", "launcher" not in run.in_front().lower(), run.in_front())
+    run.home()
+    cli.send(phone, "--ez", "popups", "true", "--ez", "reset", "true")
     cli.clear_gags(phone)
 
     print("What Android itself says about the app")

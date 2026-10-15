@@ -12,7 +12,7 @@ private const val SEC = 1_000L
 private const val MIN = 60 * SEC
 
 /** Drives the engine the way the phone does: one tick a second. */
-private class Sim(var settings: Settings = Settings()) {
+private class Sim(var settings: Settings = Settings(popups = true)) {
     var state = State()
     var ui = Ui.NONE
     var homes = 0
@@ -231,7 +231,7 @@ class EngineTest {
 
     @Test
     fun `with send-home off the hold cards keep coming instead`() {
-        val sim = Sim(Settings(sendHome = false))
+        val sim = Sim(Settings(popups = true, sendHome = false))
         sim.skipTo(25 * MIN)
         sim.watch(4)
         val card = assertIs<Card.Hold>(sim.ui.card)
@@ -332,7 +332,7 @@ class EngineTest {
 
     @Test
     fun `speed makes test time run faster`() {
-        val sim = Sim(Settings(speed = 60))
+        val sim = Sim(Settings(popups = true, speed = 60))
         sim.watch(11)
         assertEquals(10 * MIN, sim.state.watchedMs)
         assertEquals(10, sim.ui.pillMinutes)
@@ -340,7 +340,7 @@ class EngineTest {
 
     @Test
     fun `a shorter limit moves the whole ladder`() {
-        val sim = Sim(Settings(limitMs = 2 * MIN))
+        val sim = Sim(Settings(popups = true, limitMs = 2 * MIN))
         sim.watchUntil(2 * MIN)
         assertEquals(2, sim.ui.pillMinutes)
         sim.watchUntil(3 * MIN)
@@ -453,6 +453,46 @@ class EngineTest {
         sim.watch(30)
         assertEquals(0, sim.homes)
         assertIs<Card.Busy>(sim.ui.card)
+    }
+
+    // ---- with the popups off, as the app comes
+
+    @Test
+    fun `the popups are off unless switched on`() {
+        assertEquals(false, Settings().popups)
+    }
+
+    @Test
+    fun `with the popups off nothing comes up at any minute and nobody is sent home`() {
+        val sim = Sim(Settings())
+        sim.watchUntil(25 * MIN)
+        sim.watch(60)
+        assertEquals(Ui.NONE, sim.ui)
+        assertEquals(0, sim.homes)
+    }
+
+    @Test
+    fun `with the popups off the agent's card still covers the video, and goes when it is done`() {
+        val sim = Sim(Settings())
+        sim.busy = true
+        sim.watch(3)
+        assertIs<Card.Busy>(sim.ui.card)
+        sim.busy = false
+        sim.watch(1)
+        assertEquals(Ui.NONE, sim.ui)
+    }
+
+    @Test
+    fun `switching the popups off takes a card that is up away`() {
+        val sim = Sim()
+        sim.skipTo(12 * MIN)
+        sim.watch(3)
+        assertIs<Card.Hold>(sim.ui.card)
+        sim.settings = Settings()
+        sim.watch(1)
+        assertEquals(Ui.NONE, sim.ui)
+        sim.close()
+        assertEquals(Ui.NONE, sim.ui)
     }
 
     @Test
