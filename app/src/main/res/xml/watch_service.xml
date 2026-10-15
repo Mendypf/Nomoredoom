@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    packageNames: Android delivers events from these apps and from nothing else,
+    so no other app can wake this service. The list is fixed here at build time,
+    and the rules file cannot add to it.
+
+    Android does not go further than that: a service that is awake may still ask
+    about any window on screen. What it asks is this app's own rule, kept in one
+    file, Looker.kt: it opens only a window that one of these apps reported a
+    change in, and asks whether a named view is showing there.
+
+    Only two kinds of event are asked for (a screen changed, its layout changed),
+    never typing, clicks, focus or notifications.
+
+    isAccessibilityTool is false because this is not a tool for a disability,
+    and saying otherwise to get past Android's checks would be a lie.
+
+    The three flags: view names are needed to recognise the short-video player;
+    the list of windows is how it notices the app was left (Android sends no event
+    for that); and "not important" views are included because a player's container
+    is often one of them.
+-->
+<accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:accessibilityEventTypes="typeWindowStateChanged|typeWindowContentChanged"
+    android:accessibilityFeedbackType="feedbackGeneric"
+    android:accessibilityFlags="flagReportViewIds|flagRetrieveInteractiveWindows|flagIncludeNotImportantViews"
+    android:canRetrieveWindowContent="true"
+    android:description="@string/service_description"
+    android:isAccessibilityTool="false"
+    android:notificationTimeout="300"
+    android:packageNames="com.instagram.android,com.google.android.youtube,com.zhiliaoapp.musically,com.ss.android.ugc.trill"
+    android:settingsActivity="io.github.mendypf.nomoredoom.MainActivity"
+    android:summary="@string/service_summary"
+    tools:targetApi="s" />

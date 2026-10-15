@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The first, gentle notice: a line at the top that leaves by itself. Touches go through it. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/pill_root"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingBottom="12dp">
+
+    <TextView
+        android:id="@+id/pill_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="12dp"
+        android:accessibilityLiveRegion="polite"
+        android:background="@drawable/bg_pill"
+        android:fontFamily="sans-serif-medium"
+        android:paddingHorizontal="22dp"
+        android:paddingVertical="13dp"
+        android:textColor="@color/pill_text"
+        android:textSize="16sp" />
+</FrameLayout>

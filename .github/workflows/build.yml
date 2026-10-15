@@ -1,0 +1,51 @@
+# On every push and pull request: the unit tests, lint, a release build, and a
+# check that the built app asks Android for internet and nothing else.
+#
+# The on-phone test (tests/e2e.py) needs an emulator and is run by hand.
+name: build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: 21
+
+      # Also refuses a gradle-wrapper.jar that is not one Gradle published.
+      - uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
+
+      - name: Unit tests, lint and the release build
+        run: ./gradlew :core:test :app:testDebugUnitTest :app:lintDebug :app:assembleRelease --console=plain
+
+      - name: The command-line tool's tests
+        run: python3 -m unittest discover -s tests
+
+      # Internet is for one question to the coding agent's topic, and only after `agent link`.
+      - name: The built app asks for internet and nothing else
+        run: |
+          aapt2="$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)/aapt2"
+          "$aapt2" dump permissions app/build/outputs/apk/release/app-release.apk | tee permissions.txt
+          others="$(grep "uses-permission" permissions.txt | grep -v "^uses-permission: name='android.permission.INTERNET'$" || true)"
+          if [ -n "$others" ]; then
+            echo "::error::the app asks for more than internet: $others"
+            exit 1
+          fi

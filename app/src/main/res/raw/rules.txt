@@ -1,0 +1,22 @@
+# What counts as a short-video screen.
+#
+#   package | name | view ids, or * for the whole app | min-height=0.5 (optional)
+#
+# A view id is the name the app's own developers gave a piece of the screen.
+# The screen counts when one of the listed views is showing. With min-height,
+# the view must also be at least that share of the app's window tall.
+#
+# These names are the ones a dozen open-source blockers agree on. Instagram and
+# YouTube rename things now and then; with the screen open on the phone,
+# `python bin/nomoredoom.py tree` lists the current names.
+
+# The whole app: TikTok is short videos first, and its own view names change with every build.
+com.zhiliaoapp.musically   | TikTok | *
+com.ss.android.ugc.trill   | TikTok | *
+
+# The Shorts player fills the screen. The height bar keeps a shelf of thumbnails from counting.
+com.google.android.youtube | Shorts | reel_recycler, reel_watch_player, reel_player_page_container, reel_watch_fragment_root | min-height=0.5
+
+# The Reels pager can be a thin strip (a reel opened from a message), so no height bar here.
+# Instagram keeps hidden copies of it on other screens; only a copy that is showing counts.
+com.instagram.android      | Reels  | clips_viewer_view_pager

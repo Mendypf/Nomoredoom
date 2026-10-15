@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!--
+        One permission, and a test fails if another ever appears. Internet is for
+        AgentLink only: once a computer has linked a ntfy topic, the app asks it
+        "is the agent working?" while a short video is in front. It sends nothing
+        about the phone. No "draw over other apps", no usage access, no
+        notifications.
+    -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <application
+        android:allowBackup="false"
+        android:dataExtractionRules="@xml/no_backup"
+        android:fullBackupContent="false"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.Nomoredoom"
+        android:usesCleartextTraffic="false"
+        tools:targetApi="37">
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!--
+            Exported because Android itself has to bind to it; the permission
+            means nothing except the system can. What it hears is limited to
+            three apps (four package names) in res/xml/watch_service.xml.
+        -->
+        <service
+            android:name=".WatchService"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/watch_service" />
+        </service>
+
+        <!--
+            Settings from a computer: `adb shell am broadcast`. adb and the
+            system hold the DUMP permission. An installed app only gets it when
+            someone hands it over with adb, so no app can change the limit by
+            itself.
+        -->
+        <receiver
+            android:name=".AdbReceiver"
+            android:exported="true"
+            android:permission="android.permission.DUMP">
+            <intent-filter>
+                <action android:name="io.github.mendypf.nomoredoom.SET" />
+            </intent-filter>
+        </receiver>
+    </application>
+</manifest>

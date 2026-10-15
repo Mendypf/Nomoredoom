@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <style name="Theme.Nomoredoom" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:colorAccent">@color/accent</item>
+        <item name="android:windowBackground">@color/paper</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="27">true</item>
+    </style>
+
+    <!-- The popups are drawn by the service, which has no theme of its own. -->
+    <style name="Theme.Nomoredoom.Overlay" parent="android:Theme.Material.NoActionBar" />
+
+    <style name="Text.Title" parent="android:TextAppearance.Material">
+        <item name="android:textSize">13sp</item>
+        <item name="android:textColor">@color/muted</item>
+        <item name="android:letterSpacing">0.04</item>
+    </style>
+
+    <style name="Text.Value" parent="android:TextAppearance.Material">
+        <item name="android:textSize">22sp</item>
+        <item name="android:textColor">@color/ink</item>
+    </style>
+
+    <style name="Text.Body" parent="android:TextAppearance.Material">
+        <item name="android:textSize">15sp</item>
+        <item name="android:textColor">@color/muted</item>
+        <item name="android:lineSpacingMultiplier">1.25</item>
+    </style>
+</resources>

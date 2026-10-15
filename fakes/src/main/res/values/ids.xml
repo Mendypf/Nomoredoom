@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The real apps' names for their short-video players. Each flavour uses the one that belongs to it. -->
+<resources>
+    <item name="clips_viewer_view_pager" type="id" />
+    <item name="reel_recycler" type="id" />
+</resources>

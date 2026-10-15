@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Behind the card: solid, so the video is gone, with a soft glow where the card sits. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <gradient
+        android:centerX="0.5"
+        android:centerY="0.45"
+        android:endColor="@color/backdrop_edge"
+        android:gradientRadius="80%"
+        android:startColor="@color/backdrop_center"
+        android:type="radial" />
+</shape>

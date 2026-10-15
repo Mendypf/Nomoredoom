@@ -1,0 +1,27 @@
+# build output
+.gradle/
+.kotlin/
+build/
+local.properties
+
+# signing keys never go in the repo
+*.jks
+*.keystore
+*.p12
+*.pem
+keystore.properties
+.env
+
+# the app file is published on the Releases page, never in the repo
+*.apk
+*.aab
+
+# local research notes and phone captures
+research/
+captures/
+
+# editors
+.idea/
+*.iml
+.vscode/
+__pycache__/
