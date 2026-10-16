@@ -1,26 +1,13 @@
 # Nomoredoom
 
-I don't like doom scrolling while I'm working, so blocking short videos is
-how I stop it. It keeps me focused on the task at hand.
-
-Nomoredoom is a small Android app that does the blocking. While Claude Code is
-working on your computer, opening Instagram Reels, YouTube Shorts or TikTok
-covers the video, and memes slam onto the screen one after another, at random
-spots and angles, piling on top of each other. There is no X, and it all goes
-away when Claude is done.
-
-The rest of the time it leaves your videos alone.
+I don't like doom scrolling while I'm working, so I block short form content,
+and that keeps me focused on the task at hand. Nomoredoom throws GIF after GIF
+over Reels, Shorts and TikTok on your Android phone while Claude Code is
+working.
 
 <p>
   <img src="docs/gif-pile.gif" width="300" alt="A test phone opens YouTube Shorts while Claude Code works. A purple screen covers it at once and meme GIFs land on it one after another at random angles, under the line Stop doom scrolling.">
 </p>
-
-Installing it takes an AI agent that can reach your phone. One that runs on
-the phone itself can, like Hermes inside Termux. So can one on your computer,
-like Claude Code, Codex or Cursor. You tell the agent to install Nomoredoom
-from this repo. It puts an 82 KB app on the phone and switches it on. You never
-open Android Studio. Your part, once: you switch on one setting and read the
-agent a six-digit code.
 
 ## Popups after a time limit
 
@@ -143,8 +130,9 @@ covers nothing.
 
 The agent needs a way to the phone, and there are three:
 
-- It runs on the phone itself, inside Termux. No computer is needed.
-- It runs on a computer on the same Wi-Fi as the phone. Nothing plugs in.
+- It runs on the phone itself, like Hermes inside Termux. No computer is needed.
+- It runs on a computer on the same Wi-Fi as the phone, like Claude Code, Codex
+  or Cursor. Nothing plugs in.
 - It runs on a computer with the phone on a USB cable.
 
 For the first two you switch on Wireless debugging and read the agent a
