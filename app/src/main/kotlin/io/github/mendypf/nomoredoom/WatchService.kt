@@ -16,15 +16,14 @@ import android.provider.Settings
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
 import io.github.mendypf.nomoredoom.core.Box
-import io.github.mendypf.nomoredoom.core.Card
 import io.github.mendypf.nomoredoom.core.Clock
 import io.github.mendypf.nomoredoom.core.Engine
-import io.github.mendypf.nomoredoom.core.Event
 import io.github.mendypf.nomoredoom.core.Gags
 import io.github.mendypf.nomoredoom.core.Pace
 import io.github.mendypf.nomoredoom.core.Rulebook
 import io.github.mendypf.nomoredoom.core.State
 import io.github.mendypf.nomoredoom.core.StateCodec
+import io.github.mendypf.nomoredoom.core.Tick
 import io.github.mendypf.nomoredoom.core.Ui
 import io.github.mendypf.nomoredoom.core.WatchedWindows
 import io.github.mendypf.nomoredoom.core.day
@@ -43,7 +42,7 @@ import java.util.TimeZone
  *  3. Draw what the engine says should be on screen.
  *
  * Looking happens on a side thread, because it asks the other app a question
- * and a frozen app must not freeze the popups.
+ * and a frozen app must not freeze the memes.
  */
 class WatchService : AccessibilityService() {
 
@@ -83,20 +82,13 @@ class WatchService : AccessibilityService() {
     private var front: String? = null
     private var covered = false
     private var safe = Box(0, 0, 0, 0)
-    private var demo = Demo.OFF
-
-    /** The demo's one clock: every step moves on by itself, so a demo nobody touches still ends. */
-    private val demoTimer = Runnable { demoNext() }
-
-    /** Test hook: every watched second counts this many times. Never saved. */
-    internal var speed = 1
 
     internal val snapshot: State get() = state
 
     private val screenReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             when (intent.action) {
-                Intent.ACTION_SCREEN_OFF -> apply(Event.Tick(now(), null))
+                Intent.ACTION_SCREEN_OFF -> apply(Tick(now(), null))
                 Intent.ACTION_USER_PRESENT -> lookIn(LOOK_DELAY_MS)
             }
         }
@@ -132,7 +124,7 @@ class WatchService : AccessibilityService() {
         rulebook = loadRulebook()
         art = Art(this)
         agent = AgentLink(store)
-        stage = Stage(this, art, onClosed = ::onClosed)
+        stage = Stage(this, art)
         stage.gags = loadGags()
         lookThread = HandlerThread("nomoredoom-look").also {
             it.start()
@@ -181,25 +173,14 @@ class WatchService : AccessibilityService() {
             return
         }
         val clock = now()
-        val settings = store.settings(speed)
         writer.println("version=${BuildConfig.VERSION_NAME}")
         writer.println("connected=true")
         writer.println("watching=${front ?: "-"}")
+        // The notification shade or the lock screen is over the video.
         writer.println("covered=$covered")
         writer.println("safe=${safe.left},${safe.top},${safe.right},${safe.bottom}")
-        writer.println("sitting_s=${state.sittingMs(clock, settings) / 1000}")
-        writer.println("limit_min=${store.limitMinutes}")
-        writer.println("fresh_min=${store.freshMinutes}")
-        writer.println("send_home=${store.sendHome}")
-        writer.println("popups=${store.popups}")
-        writer.println("speed=$speed")
-        writer.println("card=" + when (state.card) {
-            null -> "-"
-            is Card.Tap -> "tap"
-            is Card.Hold -> "hold"
-            is Card.Farewell -> "farewell"
-            is Card.Busy -> "agent"
-        })
+        // The memes are due on the video (drawn says whether their window is up).
+        writer.println("cover=" + if (state.covered) "on" else "-")
         writer.println("agent=" + if (agent.linked) "linked" else "-")
         writer.println("agent_busy=" + if (agent.busy()) "yes" else "no")
         writer.println("agent_check=${agent.lastCheck}")
@@ -229,34 +210,6 @@ class WatchService : AccessibilityService() {
     /** A computer linked or unlinked the agent's topic. The next look at a short video asks the new one. */
     internal fun agentChanged() {
         agent.forget()
-    }
-
-    internal fun skipTo(seconds: Int) {
-        endDemo()
-        state = state.skippedTo(seconds * 1000L)
-        save(force = true)
-        draw(Ui.NONE)
-        lookIn(LOOK_DELAY_MS)
-    }
-
-    internal fun resetSitting() {
-        endDemo()
-        state = State(log = state.log)
-        save(force = true)
-        draw(Ui.NONE)
-        lookIn(LOOK_DELAY_MS)
-    }
-
-    /**
-     * Plays the popups once, in order, without counting or changing anything. The real popups
-     * wait while it plays. False when the lock screen or the notification shade is up and there
-     * is nowhere to draw.
-     */
-    internal fun startDemo(): Boolean {
-        safe = Looker.safeArea(this) ?: return false
-        demo = Demo.OFF
-        demoNext()
-        return true
     }
 
     // ---- the loop ----
@@ -301,7 +254,7 @@ class WatchService : AccessibilityService() {
         misses = if (front != null) 0 else minOf(misses + 1, MAX_MISSES)
         // Only with a short video in front does the app ask whether the agent is working.
         if (front != null) agent.refresh(arriving = !state.wasWatching, onChange = ::agentFlipped)
-        apply(Event.Tick(now(), front, busy = front != null && agent.busy()))
+        apply(Tick(now(), front, busy = front != null && agent.busy()))
         if (state.wasWatching || covered) lookIn(BEAT_MS)
         // The screen changed while this look was out, and what it saw may be from before: look once more.
         else if (again) lookIn(LOOK_DELAY_MS)
@@ -311,21 +264,15 @@ class WatchService : AccessibilityService() {
 
     /** The agent started or finished while a short video is in front: act on it now, not at the next look. */
     private fun agentFlipped() {
-        if (connected && front != null && !covered) apply(Event.Tick(now(), front, busy = agent.busy()))
+        if (connected && front != null && !covered) apply(Tick(now(), front, busy = agent.busy()))
     }
 
-    private fun onClosed() {
-        if (demo != Demo.OFF) return demoNext()
-        apply(Event.Closed(now()))
-    }
-
-    private fun apply(event: Event) {
+    private fun apply(tick: Tick) {
         val before = state
-        val out = Engine.step(before, store.settings(speed), event)
+        val out = Engine.step(before, tick)
         state = out.state
-        if (demo == Demo.OFF) draw(if (out.goHome) Ui.NONE else out.ui)
-        if (out.goHome) performGlobalAction(GLOBAL_ACTION_HOME)
-        save(force = before.wasWatching != state.wasWatching || out.goHome)
+        draw(out.ui)
+        save(force = before.wasWatching != state.wasWatching)
         Live.changed()
     }
 
@@ -339,32 +286,6 @@ class WatchService : AccessibilityService() {
         store.saveState(state)
     }
 
-    /** On to the demo's next step. A card's X asks for it; [demoTimer] does when nobody presses one. */
-    private fun demoNext() {
-        main.removeCallbacks(demoTimer)
-        val limit = store.limitMinutes
-        val next = demo.next() ?: return endDemo()
-        demo = next
-        draw(
-            when (next) {
-                Demo.NOTE -> Ui(pillMinutes = limit)
-                Demo.TAP -> Ui(card = Card.Tap(DEMO_ID, limit + 1, over = 1))
-                Demo.HOLD -> Ui(card = Card.Hold(DEMO_ID - 1, limit + 6, over = 6, holdMs = DEMO_HOLD_MS, quiet = false), dim = 0.3f)
-                Demo.FAREWELL -> Ui(card = Card.Farewell(DEMO_ID - 2, limit + 10, over = 10), dim = 0.6f)
-                Demo.OFF -> Ui.NONE
-            },
-        )
-        main.postDelayed(demoTimer, next.staysMs)
-    }
-
-    /** Also called when the app's own screen goes away, so a demo card is never left over another app. */
-    internal fun endDemo() {
-        if (demo == Demo.OFF) return
-        main.removeCallbacks(demoTimer)
-        demo = Demo.OFF
-        draw(Ui.NONE)
-    }
-
     private fun shutDown() {
         if (!connected) return
         connected = false
@@ -373,12 +294,11 @@ class WatchService : AccessibilityService() {
         lookPending = false
         lookWaiting = false
         lookAgain = false
-        demo = Demo.OFF
         unregisterReceiver(screenReceiver)
         lookThread?.quitSafely()
         lookThread = null
         looker = null
-        state = Engine.step(state, store.settings(speed), Event.Tick(now(), null)).state
+        state = Engine.step(state, Tick(now(), null)).state
         save(force = true)
         stage.clear()
         art.close()
@@ -400,7 +320,7 @@ class WatchService : AccessibilityService() {
         store.gagsText?.let { pushed ->
             runCatching { Gags.parse(pushed) }
                 .onSuccess { return it }
-                .onFailure { Log.w(TAG, "the pushed jokes do not parse, using the built-in ones", it) }
+                .onFailure { Log.w(TAG, "the pushed memes do not parse, using the built-in ones", it) }
         }
         val builtIn = resources.openRawResource(R.raw.gags).bufferedReader().use { it.readText() }
         return Gags.parse(builtIn)
@@ -423,17 +343,6 @@ class WatchService : AccessibilityService() {
         return types == AccessibilityEvent.CONTENT_CHANGE_TYPE_UNDEFINED || types and LAYOUT_CHANGES != 0
     }
 
-    /** The demo's steps in order, and how long each stays up when nobody closes it. */
-    private enum class Demo(val staysMs: Long) {
-        OFF(0),
-        NOTE(DEMO_PILL_MS),
-        TAP(DEMO_CARD_MS),
-        HOLD(DEMO_HOLD_MS + DEMO_CARD_MS),
-        FAREWELL(DEMO_FAREWELL_MS);
-
-        fun next(): Demo? = entries.getOrNull(ordinal + 1)
-    }
-
     internal companion object {
         private const val TAG = "Nomoredoom"
 
@@ -447,12 +356,6 @@ class WatchService : AccessibilityService() {
         private const val RETRY_MS = 300L
         private const val MAX_UNKNOWNS = 3
         private const val SAVE_EVERY_MS = 5_000L
-
-        private const val DEMO_ID = -1
-        private const val DEMO_PILL_MS = 3_000L
-        private const val DEMO_CARD_MS = 6_000L
-        private const val DEMO_HOLD_MS = 3_000L
-        private const val DEMO_FAREWELL_MS = 2_500L
 
         @SuppressLint("InlinedApi")
         private const val LAYOUT_CHANGES = AccessibilityEvent.CONTENT_CHANGE_TYPE_SUBTREE or

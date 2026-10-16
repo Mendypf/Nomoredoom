@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- The card. Its round corners also cut the corners of the picture inside it. -->
-<shape xmlns:android="http://schemas.android.com/apk/res/android"
-    android:shape="rectangle">
-    <solid android:color="@color/card" />
-    <corners android:radius="26dp" />
-</shape>

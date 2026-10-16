@@ -17,7 +17,7 @@ import io.github.mendypf.nomoredoom.core.Box
 import kotlin.random.Random
 
 /**
- * The agent's card: GIFs that slam onto the screen one after another, anywhere and at any angle,
+ * The memes while the agent works: GIFs that slam onto the screen one after another, anywhere and at any angle,
  * piling on top of each other. The first few come fast, so a phone picked up out of habit gets a
  * jolt. After that a new one lands every second or so and the oldest goes.
  *
@@ -43,7 +43,7 @@ internal class Chaos(
     private var asked = 0
     private var stopped = false
 
-    /** How many GIFs have landed since the card came up. */
+    /** How many GIFs have landed since the memes came up. */
     var popped = 0
         private set
 
@@ -92,7 +92,7 @@ internal class Chaos(
             return
         }
         state = "$name:loading"
-        art.load(file, SIDE_PX) { picture ->
+        art.load(file) { picture ->
             if (stopped) return@load
             if (picture == null) {
                 state = "$name:broken"
@@ -210,9 +210,6 @@ internal class Chaos(
         const val MAX_TILT = 14f
         const val SHADOW_DP = 10
         const val CORNER_DP = 14
-
-        /** The GIFs are opened at most this big; none is drawn bigger than the screen is wide. */
-        const val SIDE_PX = 720
 
         const val POP_FROM = 0.25f
         const val POP_MS = 280L

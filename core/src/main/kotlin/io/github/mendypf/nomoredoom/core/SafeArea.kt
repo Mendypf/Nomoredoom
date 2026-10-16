@@ -1,19 +1,19 @@
 package io.github.mendypf.nomoredoom.core
 
 /**
- * Where a popup may be drawn.
+ * Where the memes may be drawn.
  *
  * Android stacks an accessibility service's windows above its own status bar,
  * button bar, incoming-call banner, notification shade and lock screen, and
- * gives them no hint where those are. A popup that simply filled the screen
- * would sit on top of the Home button and hide a ringing call. So the popups
+ * gives them no hint where those are. A window that simply filled the screen
+ * would sit on top of the Home button and hide a ringing call. So the memes
  * only ever use the part of the screen no system window is using, and when the
  * system is using most of it they are not drawn at all.
  */
 public object SafeArea {
     /**
      * @param systemWindows the outlines of Android's own windows, in screen pixels
-     * @return the free part of [display], or null when a popup does not belong on screen right now
+     * @return the free part of [display], or null when the memes do not belong on screen right now
      */
     public fun within(display: Box, systemWindows: List<Box>): Box? {
         val half = display.area / 2

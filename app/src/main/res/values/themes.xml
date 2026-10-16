@@ -7,7 +7,7 @@
         <item name="android:windowLightNavigationBar" tools:targetApi="27">true</item>
     </style>
 
-    <!-- The popups are drawn by the service, which has no theme of its own. -->
+    <!-- The memes are drawn by the service, which has no theme of its own. -->
     <style name="Theme.Nomoredoom.Overlay" parent="android:Theme.Material.NoActionBar" />
 
     <style name="Text.Title" parent="android:TextAppearance.Material">

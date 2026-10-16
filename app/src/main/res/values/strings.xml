@@ -4,33 +4,13 @@
 
     <!-- Shown by Android on its own Accessibility settings screen. -->
     <string name="service_summary">Covers short videos while your coding agent works</string>
-    <string name="service_description">Covers Instagram Reels, YouTube Shorts and TikTok while your coding agent is working on your computer. Popups after a time limit can be switched on too. Android only wakes it for those three apps. It goes online for one thing only, and only if a computer linked it: to ask whether your coding agent is working.</string>
+    <string name="service_description">Covers Instagram Reels, YouTube Shorts and TikTok with memes while your coding agent is working on your computer. Android only wakes it for those three apps. It goes online for one thing only, and only if a computer linked it: to ask whether your coding agent is working.</string>
 
-    <!-- The popups. -->
-    <plurals name="minutes">
-        <item quantity="one">%d minute</item>
-        <item quantity="other">%d minutes</item>
-    </plurals>
-    <plurals name="pill">
-        <item quantity="one">%d minute of short videos</item>
-        <item quantity="other">%d minutes of short videos</item>
-    </plurals>
-    <string name="card_caption">of short videos</string>
-    <!-- The X on a popup, as a screen reader says it. -->
-    <string name="card_close">Close</string>
-    <plurals name="card_close_wait">
-        <item quantity="one">Close. Ready in %d second.</item>
-        <item quantity="other">Close. Ready in %d seconds.</item>
-    </plurals>
-    <string name="card_going_home">Going home.</string>
-    <!-- Under the GIFs while the person's coding agent works. The card has no X and goes when the agent is done. -->
+    <!-- On top of the memes while the person's coding agent works. They have no X and go when the agent is done. -->
     <string name="card_agent">Stop doom scrolling</string>
-    <!-- The minutes, stamped on the corner of the GIF. -->
-    <string name="stamp">%d MIN</string>
 
     <!-- The one screen of the app. -->
     <string name="status_on">On</string>
-    <string name="status_on_detail">Counting Reels, Shorts and TikTok.</string>
     <string name="status_on_linked">Covers Reels, Shorts and TikTok while your coding agent works.</string>
     <string name="status_on_unlinked">Not linked to a coding agent yet. Your agent links it with agent link.</string>
     <string name="status_off">Off</string>
@@ -40,36 +20,12 @@
     <string name="blocked_detail">That happens when an app was installed from a file. Tap the grey switch once so Android shows its notice. Then open App info, tap the three dots at the top, then Allow restricted settings. Come back here and turn it on.</string>
     <string name="open_app_info">Open App info</string>
 
-    <string name="sitting_title">This sitting</string>
-    <plurals name="sitting_value">
-        <item quantity="one">%1$d of %2$d minute</item>
-        <item quantity="other">%1$d of %2$d minutes</item>
-    </plurals>
-    <plurals name="sitting_note_hours">
-        <item quantity="one">A sitting ends after %d hour away from short videos.</item>
-        <item quantity="other">A sitting ends after %d hours away from short videos.</item>
-    </plurals>
-    <plurals name="sitting_note_minutes">
-        <item quantity="one">A sitting ends after %d minute away from short videos.</item>
-        <item quantity="other">A sitting ends after %d minutes away from short videos.</item>
-    </plurals>
     <string name="today_title">Today</string>
     <string name="today_none">Nothing yet</string>
     <string name="today_item">%1$s %2$d min</string>
     <string name="today_item_short">%1$s under 1 min</string>
     <!-- In quotes, or Android drops the spaces around the dot. -->
     <string name="today_separator" translatable="false">" · "</string>
-
-    <string name="popups_title">Popups after a time limit</string>
-    <string name="limit_title">Limit</string>
-    <string name="limit_less">Lower the limit</string>
-    <string name="limit_more">Raise the limit</string>
-    <string name="minus" translatable="false">−</string>
-    <string name="plus" translatable="false">+</string>
-    <string name="home_title">Send me to the home screen 10 minutes past the limit</string>
-
-    <string name="demo">Show me the popups</string>
-    <string name="demo_needs_on">Turn it on first.</string>
 
     <string name="sees_title">What it can see</string>
     <string name="sees_body">Android tells it when Instagram, YouTube or TikTok changes screens, and it checks whether the short-video player is the one showing. It reads no text and takes no screenshots. If a computer linked it to your coding agent, it asks one address whether the agent is working, and only while a short video is in front. Nothing about this phone goes with the question, but the times it asks show the service when you watch short videos.</string>

@@ -9,69 +9,7 @@ working.
   <img src="docs/gif-pile.gif" width="300" alt="A test phone opens YouTube Shorts while Claude Code works. A purple screen covers it at once and meme GIFs land on it one after another at random angles, under the line Stop doom scrolling.">
 </p>
 
-## Popups after a time limit
-
-These are off unless you switch them on, with
-`python bin/nomoredoom.py set popups on` or the switch on the app's screen.
-Then they come up whenever you watch, not only while Claude works.
-
-<p>
-  <img src="docs/card.png" width="230" alt="A card over a short video: 11 minutes, the line You said one more, and an X in the top right corner">
-  <img src="docs/call-banner.png" width="230" alt="The same card moved down the screen to leave an incoming call banner free">
-</p>
-
-| Minutes of short videos | What you get |
-|---|---|
-| 10 | A small note at the top of the screen. It leaves after 5 seconds. |
-| 11 | A meme card over the video. Tap the X to close it. |
-| 12 | The X is a 3 second countdown first. The card comes back after every minute of watching, and the video gets a little darker. |
-| 14 | A 5 second countdown. The card comes back every 45 seconds. |
-| 16 | An 8 second countdown. The card comes back every 30 seconds, and it asks Android to pause the video's sound while it is up. |
-| 18 | A 12 second countdown. The card comes back every 20 seconds. |
-| 20 | "Going home." Three seconds later you are on the home screen. Open the app again and you get 20 seconds. |
-
-A card has one control, the X in its top right corner. To stop watching you
-leave the app the way you always do. The three apps share one count. Time you spend looking at a card is not
-counted. Stay away from all three for an hour and the count starts again from
-zero.
-
-You can always get out. Home and Back keep working under every card. The
-popups stay off the status bar and the phone's own buttons, they move down
-when a call comes in so you can answer it, and they disappear when you pull
-down the notification shade or lock the phone.
-
-## The memes
-
-Each card is a GIF with the minutes stamped on its corner and one line under
-it. The app comes with 27 of them, mocking SpongeBob and the "This is fine"
-dog included, and the cards take turns through them.
-
-The pictures are not in this repo, and the phone never downloads them.
-[`gags.txt`](app/src/main/res/raw/gags.txt) is a list of lines and GIPHY
-links. `install` downloads the GIFs (about 40 MB) to the machine it runs on
-and copies them into the app's folder on the phone. The file is yours to
-change:
-
-```bash
-python bin/nomoredoom.py gags push               # the built-in memes again
-python bin/nomoredoom.py gags push my-gags.txt   # your own lines and GIFs
-python bin/nomoredoom.py gags reset              # lines only, no GIFs
-```
-
-One line of the file is one card: the minutes past the limit, the line, and a
-GIPHY link or a GIF file of your own kept next to it. Take a line out and that
-meme is gone.
-
-Read a jokes file from someone else before you push it: its lines and
-pictures go on top of your videos. The phone checks the lines first, and for a
-file it refuses nothing is downloaded or removed.
-
-The app only reads GIFs from its own folder on the phone. It does that on
-Android 11 and newer, where other apps cannot write to that folder.
-Without the GIFs a card shows its line and the minutes. That is what you get
-on an older phone, and when you install by hand on the phone.
-
-## While Claude Code works
+## How it works
 
 ```bash
 python bin/nomoredoom.py agent link     # with the phone connected, like for install
@@ -95,13 +33,18 @@ one a second, with never more than nine on screen. The line "Stop doom
 scrolling" lands on top of them. There is no X, and it asks Android to pause
 the video's sound. About 10 seconds after Claude finishes, it is gone.
 
+You can always get out. Home and Back keep working under the memes. They stay
+off the status bar and the phone's own buttons, they move down when a call
+comes in so you can answer it, and they go away when you pull down the
+notification shade or lock the phone.
+
 Stopping Claude yourself counts as finished too: Esc in the terminal, or the
 stop button in VS Code or the desktop app. Claude Code runs no hook for that,
 but it writes one line to the session's transcript, "[Request interrupted by
 user]". While a session works, a small watcher started by the hook reads the
 new lines of that file once a second and posts "done" when that line appears.
 It reads the file on your computer and sends nothing from it. In a test with a
-real session the card was gone 14 seconds after the stop. The watcher ends
+real session the memes were gone 14 seconds after the stop. The watcher ends
 with the turn.
 
 A session that stops posting stops counting after 20 minutes. That covers a
@@ -115,6 +58,35 @@ videos are not covered. You can use a ntfy server of your own
 with `agent link --server https://your.server`.
 
 Another agent can do the same with `agent send working` and `agent send done`.
+
+## The memes
+
+The app comes with 27 GIFs, mocking SpongeBob and the "This is fine" dog
+included. Each time they come up, they land in a new order.
+
+The pictures are not in this repo, and the phone never downloads them.
+[`gags.txt`](app/src/main/res/raw/gags.txt) is a list of GIPHY links, one a
+line. `install` downloads the GIFs (about 40 MB) to the machine it runs on and
+copies them into the app's folder on the phone. The file is yours to change:
+
+```bash
+python bin/nomoredoom.py gags push               # the built-in memes again
+python bin/nomoredoom.py gags push my-gags.txt   # your own GIFs
+python bin/nomoredoom.py gags reset              # no GIFs, only the purple screen and its line
+```
+
+Each line of the file is one GIF: a GIPHY link, or the name of a GIF file of
+your own kept next to the file. Take a line out and that meme is gone.
+
+Read a memes file from someone else before you push it: its pictures go on top
+of your videos. The phone checks the file first, and for a file it refuses
+nothing is downloaded or removed.
+
+The app only reads GIFs from its own folder on the phone. It does that on
+Android 11 and newer, where other apps cannot write to that folder. Without
+the GIFs the video is still covered, by the purple screen and the line "Stop
+doom scrolling". That is what you get on an older phone, and when you install
+by hand on the phone.
 
 ## Install it
 
@@ -158,7 +130,7 @@ git clone https://github.com/Mendypf/Nomoredoom.git
 cd Nomoredoom
 python bin/nomoredoom.py doctor --get-adb   # what is ready and what is missing
 python bin/nomoredoom.py install            # put the app and its memes on the phone, switch it on
-python bin/nomoredoom.py demo               # play the popups once so you can see them
+python bin/nomoredoom.py agent link         # cover the videos while Claude Code works
 ```
 
 `doctor --get-adb` downloads Google's `adb` from dl.google.com when the
@@ -193,20 +165,14 @@ Android greys out the accessibility switch for apps that came from a file, and
 getting past that is a detour through two Settings screens. The app's own
 screen walks you through it.
 
-## Settings
+## Other commands
 
 ```bash
-python bin/nomoredoom.py status         # what it sees right now and minutes used
-python bin/nomoredoom.py set popups on  # popups after a time limit (off unless switched on)
-python bin/nomoredoom.py set limit 15   # minutes before the first popup (1 to 180)
-python bin/nomoredoom.py set fresh 90   # minutes away before the count starts over
-python bin/nomoredoom.py set home off   # never send me to the home screen
-python bin/nomoredoom.py off            # switch it off; the app stays installed
-python bin/nomoredoom.py uninstall
+python bin/nomoredoom.py status      # what it sees right now
+python bin/nomoredoom.py off         # switch it off; the app stays installed
+python bin/nomoredoom.py on          # switch it back on
+python bin/nomoredoom.py uninstall   # take the app off the phone and the hooks off this computer
 ```
-
-The popups, the limit and the home-screen switch are also on the app's own
-screen.
 
 ## What it can see
 
@@ -223,7 +189,7 @@ for the names and sizes of views. It never asks for their text, and it cannot
 take a screenshot.
 
 The window of any other app stays closed to it. Nomoredoom sees that a window
-is there and where its edges are, which is how it keeps the popups off the
+is there and where its edges are, which is how it keeps the memes off the
 status bar and off a call banner.
 
 Android does not enforce any of that. Once an accessibility service is awake,
@@ -252,10 +218,10 @@ an `agent unlink` with the phone connected, the app never goes online. A test
 fails if any other permission is added, and another if code outside
 `AgentLink.kt` reaches for the network.
 
-It keeps your settings and the minutes per screen (Reels, Shorts, TikTok) for
-the last 14 days, in the app's own storage. Only a computer you have paired
-can ask for any of that: `status` reports the screen in front and today's
-minutes.
+It keeps the topic's address and the minutes per screen (Reels, Shorts,
+TikTok) for the last 14 days, in the app's own storage. Only a computer you
+have paired can ask for any of that: `status` reports the screen in front and
+today's minutes.
 
 It does not claim to be a tool for a disability, because it is not one.
 Android 17 has an Advanced Protection setting that lets only such tools use
@@ -303,7 +269,7 @@ Installing by hand on the phone keeps Android's own screens.
 
 ### What stays on the phone
 
-One app of 82 KB whose one permission is internet, one accessibility switch
+One app of 59 KB whose one permission is internet, one accessibility switch
 turned on for it, and 27 GIFs in the app's own folder.
 
 The program you paired stays on a list called "Paired devices". That list
@@ -323,7 +289,7 @@ again, switch it off at the top of its own screen.
   `906ec86208a210b13f67aedd9c1a8314ce669afdd3c2034e99e9b34fefb16381`. It
   prints the file's own SHA-256 before it installs.
 - The GIFs, from GIPHY, by the id in each link. A file has to start like a
-  GIF or WebP picture and stay under 12 MB, and one jokes file can bring 100
+  GIF or WebP picture and stay under 12 MB, and one memes file can bring 100
   at most.
 
 The tool sends nothing about you or your phone anywhere. Like any download,
@@ -353,22 +319,22 @@ python bin/nomoredoom.py rules push my-rules.txt
 python bin/nomoredoom.py rules reset       # back to the built-in file
 ```
 
-TikTok is counted as a whole app, so it does not break this way.
+TikTok is noticed as a whole app, so it does not break this way.
 
 ## What it does not do
 
 - It is a nudge. You can switch it off in Settings whenever you like.
-- TikTok counts from the moment you open it, messages and profiles included.
+- On TikTok the memes cover every screen of the app, messages and profiles
+  included.
 - Instagram Lite, TikTok Lite and short videos in a browser are not covered.
-- So far it has run on an Android 16 emulator against stand-in apps, with view
-  names taken from other open-source blockers. The install from Termux ran on
-  that emulator too. So did two installs by Claude Code with only SKILL.md to
-  go on: it paired over Wireless debugging, installed the app, and switched
-  the setting off again. The card for while Claude Code works ran there too,
-  with a real Claude Code session posting through ntfy.sh. I have not yet run
-  it against the three apps themselves on a phone.
-- The card for while Claude Code works covers a turn, not a whole session.
-  While Claude waits for your answer, the videos are not covered.
+- It has run on an Android 16 emulator against stand-in apps, and on a phone
+  with Android 16 against the real Instagram, YouTube and TikTok. On that
+  phone the memes covered Shorts 2 seconds after it opened while a real Claude
+  Code session worked, and they went when the session finished. On the
+  emulator, Claude Code installed it twice with only SKILL.md to go on, and
+  the install from Termux worked too.
+- The memes cover a turn, not a whole session. While Claude waits for your
+  answer, the videos are not covered.
 
 ## Build it yourself
 
@@ -384,8 +350,10 @@ function takes what happened and the state before, and returns the state after
 and what belongs on screen. `app/` is the thin part Android runs.
 
 `tests/e2e.py` drives an emulator against three stand-in apps that carry the
-package names of Instagram, YouTube and TikTok. It opens screens, taps the X,
-turns the screen off, pulls down the notification shade and rings the phone. After each step it asks two witnesses what happened: the
+package names of Instagram, YouTube and TikTok, and it plays the coding agent
+through a ntfy.sh topic of its own. It opens screens, taps the memes, presses
+Home and Back, turns the screen off, pulls down the notification shade and
+rings the phone. After each step it asks two witnesses what happened: the
 app's own report and Android's own list of windows.
 
 ## Credits

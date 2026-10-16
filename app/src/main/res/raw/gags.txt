@@ -1,51 +1,35 @@
-# The jokes. One per line:
+# The memes. One GIF per line: a giphy.com/gifs/ link, or the name of a .gif or
+# .webp file kept next to this file.
 #
-#   minutes past the limit | the line under the GIF | the GIF (optional) | stamp=bottom-left (optional)
-#
-# The steps are +1, +2, +4, +6, +8 and +10 minutes past your limit. A step can
-# have several jokes, and its popups take turns through them. Write {minutes}
-# in a line to have the minutes watched put there.
-#
-# A GIF is a giphy.com/gifs/ link, or the name of a .gif or .webp file kept
-# next to this file. The phone never downloads them. On a computer,
+# While your coding agent works, they land on Reels, Shorts and TikTok one after
+# another. The phone never downloads them. On a computer,
 # `python bin/nomoredoom.py gags push` downloads the GIFs and copies them to the
-# phone. Without them the popups show the lines alone.
-#
-# While your coding agent works, one card plays every GIF in this file in turn.
-#
-# The minutes are stamped on the GIF's top left corner. When that covers the
-# GIF's own caption, move the stamp: stamp=bottom-left, stamp=bottom-right or
-# stamp=off.
+# phone.
 
-+1  | Twinkleberry, look at the clock for me.            | https://giphy.com/gifs/fallontonight-jimmy-fallon-tonightshow-wrap-it-up-2aI0NbmSnKo9R4NgFE
-+1  | Any minute now.                                    | https://giphy.com/gifs/time-mr-bean-look-at-the-QBd2kLB5qDmysEXre9
-+1  | You said one more.                                 | https://giphy.com/gifs/moodman-monkey-puppet-meme-reaction-WRuBiZKB6xgsS9DrFA
-
-+2  | jUsT oNe MoRe.                                     | https://giphy.com/gifs/spongebob-squarepants-mocking-QUXYcgCwvCm4cKcrI3
-+2  | One more. Sure.                                    | https://giphy.com/gifs/unimpressed-chloe-NMkDjJP2ZC29G
-+2  | One more turned into {minutes} minutes.            | https://giphy.com/gifs/surprised-pikachu-6nWhy3ulBL7GSCvKw6
-+2  | Scroll scroll scroll scroll scroll.                | https://giphy.com/gifs/justin-monkey-i-am-disappointed-l3vRhaxVcQ1i0CZlC
-
-+4  | You have been scrolling for {minutes} minutes.     | https://giphy.com/gifs/mrw-imgur-pictures-EZYQjm1uPrXGg | stamp=bottom-right
-+4  | Me to me: one more.                                | https://giphy.com/gifs/culture--meme-kermit-3oriNSf2iLjMVO7dao
-+4  | It is only {minutes} minutes.                      | https://giphy.com/gifs/this-is-fine-2UCt7zbmsLoCXybx6t
-+4  | Last one, you said.                                | https://giphy.com/gifs/judgejudy-wtL7KLaQOKirz6wm0z
-+4  | You are still here.                                | https://giphy.com/gifs/hd-facepalm-picard-3ov9jCGzR1JtD8Hlni
-
-+6  | I am once again asking you to put the phone down.  | https://giphy.com/gifs/bernie2020-bernie-sanders-2020-lOy1ykBR8ltv3o1rfj
-+6  | Put the phone down, you bitch.                     | https://giphy.com/gifs/justin-stop-it-michael-jordon-get-some-help-l4Ki2obCyAQS5WhFe | stamp=bottom-left
-+6  | Ah shit, here we go again.                         | https://giphy.com/gifs/rockstargames-gta-trilogy-gtatrilogy-6ILjOfJ1oL7NAc9SQ7
-+6  | It is not wasted time if you never check the clock. | https://giphy.com/gifs/culture--think-hmm-d3mlE7uhX8KFgEmY
-+6  | Where did the time go.                             | https://giphy.com/gifs/travolta-VWZUOQ2jPGviE
-+6  | Twinkleberry, that is plenty.                      | https://giphy.com/gifs/tvland-tv-land-golden-girls-goldengirls-SRka2MLKzpzE6K24al
-
-+8  | One does not simply watch one more.                | https://giphy.com/gifs/fellowship-of-the-ring-lotr-lord-rings-smW5FBep69d3q
-+8  | Go touch grass.                                    | https://giphy.com/gifs/meme-memes-touch-q5jnZ0d18LEtOgAICr
-+8  | People are outside.                                | https://giphy.com/gifs/fomo-squidward-window-looking-A2qimiobWWIKYGobDI
-+8  | Put it down for me, baby.                          | https://giphy.com/gifs/cat-funny-QgcQLZa6glP2w
-+8  | No more.                                           | https://giphy.com/gifs/catvidfest-no-grumpy-cat-vPN3zK9dNL236
-+8  | Not another one.                                   | https://giphy.com/gifs/the-office-no-michael-scott-ToMjGpx9F5ktZw8qPUQ
-+8  | Hand it over.                                      | https://giphy.com/gifs/gimmie-that-give-me-your-phone-get-off-Z4b8I5fvk3K1rXwTH9
-
-+10 | Going home.                                        | https://giphy.com/gifs/spongebob-meme-imma-head-out-ight-PkLPBuyozY7F31wCxF
-+10 | Going home.                                        | https://giphy.com/gifs/disappear-4bpK2k0Yru5Us
+https://giphy.com/gifs/fallontonight-jimmy-fallon-tonightshow-wrap-it-up-2aI0NbmSnKo9R4NgFE
+https://giphy.com/gifs/time-mr-bean-look-at-the-QBd2kLB5qDmysEXre9
+https://giphy.com/gifs/moodman-monkey-puppet-meme-reaction-WRuBiZKB6xgsS9DrFA
+https://giphy.com/gifs/spongebob-squarepants-mocking-QUXYcgCwvCm4cKcrI3
+https://giphy.com/gifs/unimpressed-chloe-NMkDjJP2ZC29G
+https://giphy.com/gifs/surprised-pikachu-6nWhy3ulBL7GSCvKw6
+https://giphy.com/gifs/justin-monkey-i-am-disappointed-l3vRhaxVcQ1i0CZlC
+https://giphy.com/gifs/mrw-imgur-pictures-EZYQjm1uPrXGg
+https://giphy.com/gifs/culture--meme-kermit-3oriNSf2iLjMVO7dao
+https://giphy.com/gifs/this-is-fine-2UCt7zbmsLoCXybx6t
+https://giphy.com/gifs/judgejudy-wtL7KLaQOKirz6wm0z
+https://giphy.com/gifs/hd-facepalm-picard-3ov9jCGzR1JtD8Hlni
+https://giphy.com/gifs/bernie2020-bernie-sanders-2020-lOy1ykBR8ltv3o1rfj
+https://giphy.com/gifs/justin-stop-it-michael-jordon-get-some-help-l4Ki2obCyAQS5WhFe
+https://giphy.com/gifs/rockstargames-gta-trilogy-gtatrilogy-6ILjOfJ1oL7NAc9SQ7
+https://giphy.com/gifs/culture--think-hmm-d3mlE7uhX8KFgEmY
+https://giphy.com/gifs/travolta-VWZUOQ2jPGviE
+https://giphy.com/gifs/tvland-tv-land-golden-girls-goldengirls-SRka2MLKzpzE6K24al
+https://giphy.com/gifs/fellowship-of-the-ring-lotr-lord-rings-smW5FBep69d3q
+https://giphy.com/gifs/meme-memes-touch-q5jnZ0d18LEtOgAICr
+https://giphy.com/gifs/fomo-squidward-window-looking-A2qimiobWWIKYGobDI
+https://giphy.com/gifs/cat-funny-QgcQLZa6glP2w
+https://giphy.com/gifs/catvidfest-no-grumpy-cat-vPN3zK9dNL236
+https://giphy.com/gifs/the-office-no-michael-scott-ToMjGpx9F5ktZw8qPUQ
+https://giphy.com/gifs/gimmie-that-give-me-your-phone-get-off-Z4b8I5fvk3K1rXwTH9
+https://giphy.com/gifs/spongebob-meme-imma-head-out-ight-PkLPBuyozY7F31wCxF
+https://giphy.com/gifs/disappear-4bpK2k0Yru5Us

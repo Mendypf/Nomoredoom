@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Behind the card: solid, so the video is gone, with a soft glow where the card sits. -->
+<!-- Behind the memes: solid, so the video is gone, with a soft glow in the middle. -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
     <gradient

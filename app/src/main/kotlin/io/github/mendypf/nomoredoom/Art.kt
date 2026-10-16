@@ -13,7 +13,7 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 /**
- * The GIFs for the popups.
+ * The GIFs for the memes.
  *
  * The app never fetches them. They are files the install tool copies over adb into the app's own folder on the phone's shared storage
  * (`Android/data/<this app>/files/gags`), which needs no permission to read.
@@ -40,17 +40,17 @@ internal class Art(context: Context) {
 
     /**
      * Opens the file on a side thread and hands the picture to [onReady] on the main thread; null if it would not open.
-     * A picture bigger than [maxSide] on its longest side is opened at that size.
+     * A picture bigger than [MAX_SIDE] on its longest side is opened at that size.
      */
-    fun load(file: File, maxSide: Int = MAX_SIDE, onReady: (Drawable?) -> Unit) {
+    fun load(file: File, onReady: (Drawable?) -> Unit) {
         val thread = worker ?: Executors.newSingleThreadExecutor { Thread(it, "nomoredoom-art") }.also { worker = it }
         thread.execute {
             val drawable = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 runCatching {
                     ImageDecoder.decodeDrawable(ImageDecoder.createSource(file)) { decoder, info, _ ->
                         val longest = maxOf(info.size.width, info.size.height)
-                        if (longest > maxSide) {
-                            val scale = maxSide.toFloat() / longest
+                        if (longest > MAX_SIDE) {
+                            val scale = MAX_SIDE.toFloat() / longest
                             decoder.setTargetSize(
                                 (info.size.width * scale).toInt().coerceAtLeast(1),
                                 (info.size.height * scale).toInt().coerceAtLeast(1),
@@ -75,6 +75,7 @@ internal class Art(context: Context) {
         private const val TAG = "Nomoredoom"
         private val ENDINGS = listOf("webp", "gif")
         private const val MAX_BYTES = 12L * 1024 * 1024
-        private const val MAX_SIDE = 1_080
+        /** None is drawn wider than the screen, so none needs opening bigger than this. */
+        private const val MAX_SIDE = 720
     }
 }

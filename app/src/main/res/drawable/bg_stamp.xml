@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- The minutes, stamped on the corner of the GIF. A solid plate, so it reads on any picture. -->
+<!-- The plate under the line on top of the memes. Solid, so it reads on any picture. -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
     <solid android:color="@color/stamp" />

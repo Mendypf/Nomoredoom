@@ -12,32 +12,19 @@ import android.provider.Settings
 import android.view.View
 import android.view.WindowInsets
 import android.view.accessibility.AccessibilityManager
-import android.widget.Button
-import android.widget.ProgressBar
-import android.widget.Switch
 import android.widget.TextView
-import android.widget.Toast
 import io.github.mendypf.nomoredoom.core.Clock
 import io.github.mendypf.nomoredoom.core.day
 import java.util.TimeZone
 
-/** The app's one screen: is it on, what it covers, and the popups with their settings. */
+/** The app's one screen: is it on, what it covers, and today's minutes. */
 class MainActivity : Activity() {
 
     private lateinit var store: Store
     private lateinit var status: TextView
     private lateinit var statusDetail: TextView
     private lateinit var offBlock: View
-    private lateinit var sittingBlock: View
-    private lateinit var popupsBlock: View
-    private lateinit var popups: Switch
-    private lateinit var sitting: TextView
-    private lateinit var sittingBar: ProgressBar
-    private lateinit var sittingNote: TextView
     private lateinit var today: TextView
-    private lateinit var limit: TextView
-    private lateinit var sendHome: Switch
-    private lateinit var demo: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,32 +34,12 @@ class MainActivity : Activity() {
         status = findViewById(R.id.status)
         statusDetail = findViewById(R.id.status_detail)
         offBlock = findViewById(R.id.off_block)
-        sittingBlock = findViewById(R.id.sitting_block)
-        popupsBlock = findViewById(R.id.popups_block)
-        popups = findViewById(R.id.popups)
-        sitting = findViewById(R.id.sitting)
-        sittingBar = findViewById(R.id.sitting_bar)
-        sittingNote = findViewById(R.id.sitting_note)
         today = findViewById(R.id.today)
-        limit = findViewById(R.id.limit)
-        sendHome = findViewById(R.id.send_home)
-        demo = findViewById(R.id.demo)
 
         keepClearOfSystemBars(findViewById(R.id.root))
 
         findViewById<View>(R.id.turn_on).setOnClickListener { openAccessibilitySettings() }
         findViewById<View>(R.id.open_app_info).setOnClickListener { openAppInfo() }
-        findViewById<View>(R.id.limit_less).setOnClickListener { stepLimit(-1) }
-        findViewById<View>(R.id.limit_more).setOnClickListener { stepLimit(+1) }
-        sendHome.setOnCheckedChangeListener { _, checked -> store.sendHome = checked }
-        popups.setOnCheckedChangeListener { _, checked ->
-            store.popups = checked
-            render()
-        }
-        demo.setOnClickListener {
-            val service = Live.service
-            if (service == null) toast(R.string.demo_needs_on) else service.startDemo()
-        }
     }
 
     override fun onResume() {
@@ -83,42 +50,23 @@ class MainActivity : Activity() {
 
     override fun onPause() {
         Live.onChange = null
-        Live.service?.endDemo()
         super.onPause()
     }
 
     private fun render() {
         val on = isSwitchedOn()
         status.setText(if (on) R.string.status_on else R.string.status_off)
-        val popupsOn = store.popups
         statusDetail.setText(
             when {
                 !on -> R.string.status_off_detail
                 store.agentUrl != null -> R.string.status_on_linked
-                popupsOn -> R.string.status_on_detail
                 else -> R.string.status_on_unlinked
             },
         )
         offBlock.visibility = if (on) View.GONE else View.VISIBLE
-        if (popups.isChecked != popupsOn) popups.isChecked = popupsOn
-        sittingBlock.visibility = if (popupsOn) View.VISIBLE else View.GONE
-        popupsBlock.visibility = if (popupsOn) View.VISIBLE else View.GONE
 
         val clock = now()
         val state = Live.service?.snapshot ?: store.loadState()
-        val limitMinutes = store.limitMinutes
-        val sittingMs = state.sittingMs(clock, store.settings())
-        sitting.text = resources.getQuantityString(
-            R.plurals.sitting_value, limitMinutes, (sittingMs / 60_000).toInt(), limitMinutes,
-        )
-        sittingBar.progress = (sittingMs * 1000 / (limitMinutes * 60_000L)).toInt().coerceIn(0, 1000)
-        val fresh = store.freshMinutes
-        sittingNote.text = if (fresh % 60 == 0) {
-            resources.getQuantityString(R.plurals.sitting_note_hours, fresh / 60, fresh / 60)
-        } else {
-            resources.getQuantityString(R.plurals.sitting_note_minutes, fresh, fresh)
-        }
-
         val byName = state.log.byName(clock.day()).filterValues { it > 0 }
         today.text = if (byName.isEmpty()) {
             getString(R.string.today_none)
@@ -129,17 +77,6 @@ class MainActivity : Activity() {
                 else getString(R.string.today_item, it.key, minutes)
             }
         }
-
-        limit.text = resources.getQuantityString(R.plurals.minutes, limitMinutes, limitMinutes)
-        if (sendHome.isChecked != store.sendHome) sendHome.isChecked = store.sendHome
-    }
-
-    private fun stepLimit(direction: Int) {
-        val steps = Store.LIMIT_STEPS
-        val current = store.limitMinutes
-        val next = if (direction > 0) steps.firstOrNull { it > current } else steps.lastOrNull { it < current }
-        if (next != null) store.limitMinutes = next
-        render()
     }
 
     private fun isSwitchedOn(): Boolean =
@@ -167,8 +104,6 @@ class MainActivity : Activity() {
             open(Intent(Settings.ACTION_SETTINGS))
         }
     }
-
-    private fun toast(text: Int) = Toast.makeText(this, text, Toast.LENGTH_SHORT).show()
 
     private fun now(): Clock {
         val wall = System.currentTimeMillis()

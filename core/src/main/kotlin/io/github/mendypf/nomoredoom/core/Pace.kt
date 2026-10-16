@@ -6,7 +6,7 @@ package io.github.mendypf.nomoredoom.core
  * Scrolling a feed changes the layout many times a second, and every look asks the app a
  * question on its own main thread. The first looks stay quick, because someone who has just
  * opened the app may tap Reels next. After that, each look that finds nothing makes the next
- * one wait longer, up to [SLOWEST_MS]. The price is that a sitting can start counting a few
+ * one wait longer, up to [SLOWEST_MS]. The price is that a short video can be noticed a few
  * seconds late.
  */
 public object Pace {

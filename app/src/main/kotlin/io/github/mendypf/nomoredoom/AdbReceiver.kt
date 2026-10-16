@@ -41,22 +41,6 @@ class AdbReceiver : BroadcastReceiver() {
         val store = Store(context)
         val done = mutableListOf<String>()
 
-        if (extras.containsKey("limit")) {
-            store.limitMinutes = extras.getInt("limit")
-            done += "limit=${store.limitMinutes}"
-        }
-        if (extras.containsKey("fresh")) {
-            store.freshMinutes = extras.getInt("fresh")
-            done += "fresh=${store.freshMinutes}"
-        }
-        if (extras.containsKey("home")) {
-            store.sendHome = extras.getBoolean("home")
-            done += "home=${store.sendHome}"
-        }
-        if (extras.containsKey("popups")) {
-            store.popups = extras.getBoolean("popups")
-            done += "popups=${store.popups}"
-        }
         if (extras.containsKey("rules_b64")) {
             val encoded = extras.getString("rules_b64").orEmpty()
             if (encoded.isEmpty()) {
@@ -106,39 +90,10 @@ class AdbReceiver : BroadcastReceiver() {
         }
         if (extras.getBoolean("gags_dir")) {
             // Where a computer should copy the GIFs. Asking is what creates the folder, owned by this app.
-            val folder = requireNotNull(Art(context).folder) { "GIFs need Android 11 or newer; the lines work without them" }
+            val folder = requireNotNull(Art(context).folder) { "GIFs need Android 11 or newer" }
             done += "gags_dir=${folder.absolutePath}"
         }
-
-        // The rest only makes sense while the service is running.
-        val wantsService = TEST_KEYS.any(extras::containsKey)
-        val service = Live.service
-        if (wantsService) {
-            requireNotNull(service) { "the service is off" }
-            if (extras.containsKey("speed")) {
-                val speed = extras.getInt("speed")
-                require(speed in 1..600) { "speed must be 1 to 600" }
-                service.speed = speed
-                done += "speed=$speed"
-            }
-            if (extras.containsKey("skip_s")) {
-                val seconds = extras.getInt("skip_s")
-                require(seconds in 0..86_400) { "skip_s must be 0 to 86400" }
-                service.skipTo(seconds)
-                done += "skip_s=$seconds"
-            }
-            if (extras.getBoolean("reset")) {
-                service.resetSitting()
-                done += "reset"
-            }
-            if (extras.getBoolean("demo")) {
-                require(service.startDemo()) { "the phone is locked or its notification shade is down" }
-                done += "demo"
-            }
-        }
-        require(done.isNotEmpty()) {
-            "nothing to do: pass limit, fresh, home, popups, rules_b64, gags_b64, gags_dir, agent_url, speed, skip_s, reset or demo"
-        }
+        require(done.isNotEmpty()) { "nothing to do: pass rules_b64, gags_b64, gags_dir or agent_url" }
         return done.joinToString(" ")
     }
 
@@ -146,6 +101,5 @@ class AdbReceiver : BroadcastReceiver() {
         const val ACTION = "io.github.mendypf.nomoredoom.SET"
         const val OK = 1
         const val REFUSED = 2
-        val TEST_KEYS = listOf("speed", "skip_s", "reset", "demo")
     }
 }

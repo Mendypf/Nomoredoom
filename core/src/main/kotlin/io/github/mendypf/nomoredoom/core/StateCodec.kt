@@ -3,23 +3,19 @@ package io.github.mendypf.nomoredoom.core
 /**
  * Turns the part of [State] worth keeping into one line of text and back:
  *
- *     v1|watched=754000|last=1791763200000,123456,9,0|pill=1|tap=1|hold=780000|home=700000|log=20738:Reels=600000
+ *     v2|log=20738:Reels=600000,Shorts=154000;20737:TikTok=9000
  *
- * What is on screen right now (a card, the pill) is left out on purpose: after a
- * restart the engine works out again what is due.
+ * That is the watched time of the last two weeks. Whether a video is in front right now is
+ * left out on purpose: after a restart the engine sees that again. A line saved by the
+ * version that had the timer cards (v1) still gives its watched time.
  */
 public object StateCodec {
-    private const val VERSION = "v1"
+    private const val VERSION = "v2"
+    private val READS = setOf("v1", VERSION)
     private const val MAX_MS = 366L * 86_400_000L
 
     public fun encode(state: State): String = listOf(
         VERSION,
-        "watched=${state.watchedMs}",
-        "last=" + state.lastWatch?.let { "${it.wallMs},${it.upMs},${it.boot},${it.utcOffsetMs}" }.orEmpty(),
-        "pill=${state.pillDone.bit()}",
-        "tap=${state.tapDone.bit()}",
-        "hold=${state.nextHoldAtMs}",
-        "home=${state.lastHomeAtMs ?: ""}",
         "log=" + state.log.days.entries.joinToString(";") { (day, names) ->
             "$day:" + names.entries.joinToString(",") { (name, ms) -> "$name=$ms" }
         },
@@ -30,26 +26,13 @@ public object StateCodec {
 
     private fun parse(text: String): State {
         val parts = text.split('|')
-        require(parts.first() == VERSION)
+        require(parts.first() in READS)
         val fields = parts.drop(1).associate { part ->
             val at = part.indexOf('=')
             require(at > 0)
             part.substring(0, at) to part.substring(at + 1)
         }
-        return State(
-            watchedMs = fields.getValue("watched").ms(),
-            lastWatch = fields.getValue("last").takeIf { it.isNotEmpty() }?.let(::clock),
-            pillDone = fields.getValue("pill").bit(),
-            tapDone = fields.getValue("tap").bit(),
-            nextHoldAtMs = fields.getValue("hold").ms(),
-            lastHomeAtMs = fields.getValue("home").takeIf { it.isNotEmpty() }?.ms(),
-            log = DayLog(fields.getValue("log").takeIf { it.isNotEmpty() }?.let(::days).orEmpty()),
-        )
-    }
-
-    private fun clock(text: String): Clock {
-        val (wall, up, boot, offset) = text.split(',').also { require(it.size == 4) }
-        return Clock(wallMs = wall.toLong(), upMs = up.toLong(), boot = boot.toInt(), utcOffsetMs = offset.toInt())
+        return State(log = DayLog(fields.getValue("log").takeIf { it.isNotEmpty() }?.let(::days).orEmpty()))
     }
 
     private fun days(text: String): Map<Int, Map<String, Long>> = text.split(';').associate { entry ->
@@ -60,14 +43,6 @@ public object StateCodec {
             name to pair.substringAfterLast('=').ms()
         }
         day to names
-    }
-
-    private fun Boolean.bit(): Int = if (this) 1 else 0
-
-    private fun String.bit(): Boolean = when (this) {
-        "1" -> true
-        "0" -> false
-        else -> throw IllegalArgumentException()
     }
 
     private fun String.ms(): Long = toLong().also { require(it in 0..MAX_MS) }

@@ -7,18 +7,10 @@
     <color name="line">#E6E0D6</color>
     <color name="accent">#2A0E6B</color>
 
-    <!-- the popups: the same cream and ink as a card, on deep purple -->
+    <!-- the memes: deep purple behind them, the line on a lighter purple plate -->
     <color name="backdrop_center">#2A0E6B</color>
     <color name="backdrop_edge">#1A0848</color>
-    <color name="card">#FBF8F3</color>
-    <color name="card_text">#1A1430</color>
     <color name="stamp">#5A3EB8</color>
     <color name="stamp_text">#FBF8F3</color>
-    <color name="close_disc">#1A0848</color>
-    <color name="close_glyph">#FBF8F3</color>
-    <color name="close_ring">#A691F5</color>
-    <color name="close_track">#40FFFFFF</color>
-    <color name="pill">#F21A0848</color>
-    <color name="pill_text">#FBF8F3</color>
     <color name="icon_background">#1A0848</color>
 </resources>

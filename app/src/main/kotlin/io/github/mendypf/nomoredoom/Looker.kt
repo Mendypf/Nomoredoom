@@ -22,7 +22,7 @@ internal sealed interface Seen {
 
     /**
      * The lock screen, the notification shade or a system menu is over the screen.
-     * Whatever is under it, nobody is watching it, and a popup must not sit on top.
+     * Whatever is under it, nobody is watching it, and the memes must not sit on top.
      */
     data object Covered : Seen
 
@@ -33,7 +33,7 @@ internal sealed interface Seen {
     data object Unknown : Seen
 }
 
-/** @param safe the part of the screen no system bar or banner is using; popups stay inside it. Null when [Seen.Covered]. */
+/** @param safe the part of the screen no system bar or banner is using; the memes stay inside it. Null when [Seen.Covered]. */
 internal data class Look(val seen: Seen, val safe: Box?)
 
 /**
@@ -87,7 +87,7 @@ internal object Looker {
      * watched app in front. Names, sizes and types only, never what the views say.
      */
     fun printNamedViews(service: AccessibilityService, rulebook: Rulebook, watched: Set<Int>, out: PrintWriter) {
-        // This runs on the thread that draws the popups, and a slow app answers each question slowly.
+        // This runs on the thread that draws the memes, and a slow app answers each question slowly.
         val giveUpAt = SystemClock.uptimeMillis() + TREE_BUDGET_MS
         for (window in service.windows.filter { it.type == AccessibilityWindowInfo.TYPE_APPLICATION && it.id in watched }) {
             val root = window.root ?: continue

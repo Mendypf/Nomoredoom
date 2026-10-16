@@ -6,8 +6,7 @@
     python bin/nomoredoom.py doctor          what is ready and what is missing
     python bin/nomoredoom.py install         put the app on the phone and switch it on
     python bin/nomoredoom.py status          what the app sees right now
-    python bin/nomoredoom.py set popups on   popups after 10 minutes of short videos (off unless switched on)
-    python bin/nomoredoom.py gags push       copy the popups' GIFs and lines to the phone
+    python bin/nomoredoom.py gags push       copy the memes' GIFs to the phone
     python bin/nomoredoom.py agent link      cover the videos while Claude Code is working
     python bin/nomoredoom.py disconnect      when you are done: switch Wireless debugging off on the phone
 
@@ -62,11 +61,11 @@ CACHE = Path(os.environ.get("XDG_CACHE_HOME") or Path.home() / ".cache") / "nomo
 DEFAULT_GAGS = REPO_ROOT / "app" / "src" / "main" / "res" / "raw" / "gags.txt"
 GIPHY_FILE = "https://media.giphy.com/media/{id}/giphy.gif"
 MAX_GIF = 12 * 1024 * 1024
-# The most GIFs one jokes file may bring, and the most they may weigh together. The built-in file
+# The most GIFs one memes file may bring, and the most they may weigh together. The built-in file
 # has 27, about 40 MB.
 MAX_GIFS = 100
 MAX_GIFS_TOTAL = 150 * 1024 * 1024
-# A rules or jokes file travels inside one adb command, and Windows refuses a command line
+# A rules or memes file travels inside one adb command, and Windows refuses a command line
 # over 32,767 characters. 20 KB of text is 27 KB once encoded.
 MAX_PUSHED_TEXT = 20_000
 # The name this tool gives GIPHY when it asks for a GIF: its own, and where to find it.
@@ -547,19 +546,18 @@ def status(phone: Phone) -> dict:
     said = dict(re.findall(r"^\s*([a-z_]+)=(.*?)\s*$", out, re.M))
     if said.get("connected") != "true":
         return {"connected": "false"}
-    # Only the fields this tool knows, each one cut to size: `line` is text out of a jokes file.
+    # Only the fields this tool knows, each one cut to size.
     return {name: plain(said[name]) for name in STATUS_FIELDS if name in said}
 
 
 STATUS_FIELDS = (
-    "version", "connected", "watching", "covered", "safe", "sitting_s", "limit_min", "fresh_min", "send_home", "popups", "speed",
-    "card", "drawn", "line", "gif", "card_box", "gif_box", "close_at", "close", "gags", "gifs_on_phone", "today_s",
-    "rules", "packages", "popped", "spots", "line_box", "agent", "agent_busy", "agent_check", "agent_answer_s", "look",
+    "version", "connected", "watching", "covered", "safe", "cover", "drawn", "line", "gif", "popped", "spots", "line_box",
+    "gags", "gifs_on_phone", "today_s", "rules", "packages", "agent", "agent_busy", "agent_check", "agent_answer_s", "look",
 )
 
 
 def words_in(path: Path) -> str:
-    """A rules or jokes file as text, without the invisible mark some Windows editors put first."""
+    """A rules or memes file as text, without the invisible mark some Windows editors put first."""
     if not path.is_file():
         raise Problem(f"{path} is not a file")
     try:
@@ -569,7 +567,7 @@ def words_in(path: Path) -> str:
 
 
 def packed(data: bytes, what: str) -> str:
-    """A rules or jokes file as one word of an adb command."""
+    """A rules or memes file as one word of an adb command."""
     if len(data) > MAX_PUSHED_TEXT:
         raise Problem(f"the {what} file is {len(data) // 1000} KB; the most that can be sent is "
                       f"{MAX_PUSHED_TEXT // 1000} KB")
@@ -634,26 +632,26 @@ def wait_until_running(phone: Phone, seconds: int = 15) -> dict:
     )
 
 
-# ---------------------------------------------------------------- the jokes and their GIFs
+# ---------------------------------------------------------------- the memes and their GIFs
 
 def gag_refs(text: str) -> list[tuple[str, str]]:
-    """Every GIF a jokes file asks for, once each: (the name the phone looks for, where to get it).
+    """Every GIF a memes file asks for, once each: (the name the phone looks for, where to get it).
 
-    The phone checks the whole file itself and refuses a bad one; this only finds the GIFs.
+    The file is one GIF a line. The phone checks the whole file itself and refuses a bad one; this only finds the GIFs.
     """
     refs: dict[str, str] = {}
-    for row in text.splitlines():
-        parts = [part.strip() for part in row.split("|")]
-        if row.lstrip().startswith("#") or len(parts) < 3 or not parts[2]:
+    for row in text.lstrip("\ufeff").splitlines():
+        ref = row.strip()
+        if not ref or ref.startswith("#"):
             continue
-        page = re.fullmatch(r"https://(?:www\.)?giphy\.com/gifs/([A-Za-z0-9-]+)/?", parts[2])
-        direct = re.fullmatch(r"https://media\d*\.giphy\.com/media/([A-Za-z0-9]+)/[A-Za-z0-9._-]+", parts[2])
-        own = re.fullmatch(r"([A-Za-z0-9][A-Za-z0-9_-]{0,63})\.(?:gif|webp)", parts[2], re.I)
+        page = re.fullmatch(r"https://(?:www\.)?giphy\.com/gifs/([A-Za-z0-9-]+)/?", ref)
+        direct = re.fullmatch(r"https://media\d*\.giphy\.com/media/([A-Za-z0-9]+)/[A-Za-z0-9._-]+", ref)
+        own = re.fullmatch(r"([A-Za-z0-9][A-Za-z0-9_-]{0,63})\.(?:gif|webp)", ref, re.I)
         if page or direct:
             giphy_id = page.group(1).rsplit("-", 1)[-1] if page else direct.group(1)
             refs.setdefault(giphy_id, GIPHY_FILE.format(id=giphy_id))
         elif own:
-            refs.setdefault(own.group(1), parts[2])
+            refs.setdefault(own.group(1), ref)
     return list(refs.items())
 
 
@@ -662,7 +660,7 @@ def looks_like_a_gif(data: bytes) -> bool:
 
 
 def fetch_gif(name: str, source: str, beside: Path) -> Path | None:
-    """The GIF as a file on this computer: downloaded once from GIPHY, or found next to the jokes file."""
+    """The GIF as a file on this computer: downloaded once from GIPHY, or found next to the memes file."""
     if not source.startswith("https://"):
         mine = beside / source
         ok = mine.is_file() and mine.stat().st_size <= MAX_GIF and looks_like_a_gif(mine.read_bytes()[:16])
@@ -700,18 +698,18 @@ def gags_folder(phone: Phone) -> str:
 
 
 def push_gags(phone: Phone, pack: Path) -> str:
-    """Copies a jokes file and its GIFs to the phone. The phone itself never goes online."""
+    """Copies a memes file and its GIFs to the phone. The phone itself never goes online."""
     text = words_in(pack)
-    lines = packed(text.encode(), "jokes")
+    lines = packed(text.encode(), "memes")
     wanted = gag_refs(text)
     if len(wanted) > MAX_GIFS:
-        raise Problem(f"the jokes file names {len(wanted)} different GIFs. The most this tool copies is {MAX_GIFS}")
+        raise Problem(f"the memes file names {len(wanted)} different GIFs. The most this tool copies is {MAX_GIFS}")
     try:
         folder = gags_folder(phone)
-    except Refused as why:  # Android 10 and older: lines only
+    except Refused as why:  # Android 10 and older: no folder for GIFs
         send(phone, "--es", "gags_b64", lines)
-        return f"the lines are on the phone, without GIFs ({why})"
-    # The phone reads the lines first and refuses a bad file whole. Only for a file it took is anything
+        return f"the list is on the phone, without its GIFs ({why})"
+    # The phone reads the file first and refuses a bad one whole. Only for a file it took is anything
     # downloaded, and only then is anything it already has removed.
     send(phone, "--es", "gags_b64", lines)
     found, missing, weight = [], [], 0
@@ -722,8 +720,8 @@ def push_gags(phone: Phone, pack: Path) -> str:
             continue
         weight += local.stat().st_size
         if weight > MAX_GIFS_TOTAL:
-            raise Problem(f"the GIFs in this jokes file weigh more than {MAX_GIFS_TOTAL // (1024 * 1024)} MB together. "
-                          "Its lines are on the phone and none of its GIFs were copied. To go back to the built-in "
+            raise Problem(f"the GIFs in this memes file weigh more than {MAX_GIFS_TOTAL // (1024 * 1024)} MB together. "
+                          "Its list is on the phone and none of its GIFs were copied. To go back to the built-in "
                           "set: python bin/nomoredoom.py gags push")
         found.append((name, local))
     on_phone = files_on_phone(phone, folder)
@@ -736,7 +734,8 @@ def push_gags(phone: Phone, pack: Path) -> str:
         if on_phone.get(target) != local.stat().st_size:
             phone.run("push", str(local), f"{folder}/{target}", timeout=180)
     note = f" Could not get: {', '.join(missing)}." if missing else ""
-    return f"{len(found)} GIFs and their lines are on the phone.{note}"
+    count = "1 GIF is" if len(found) == 1 else f"{len(found)} GIFs are"
+    return f"{count} on the phone.{note}"
 
 
 def clear_gags(phone: Phone) -> str:
@@ -798,11 +797,8 @@ def cmd_doctor(args: argparse.Namespace) -> int:
         lines.append("NOT READY  switched on in settings, but Android is not running it. Open Settings > Accessibility > Nomoredoom.")
         return finish(args, report, lines)
     report.update(status=info, ready=True)
-    if info.get("popups") == "true":
-        lines.append(f"ok         running. Limit {info.get('limit_min')} min, {int(info.get('sitting_s', 0)) // 60} min used this sitting")
-    else:
-        lines.append("ok         running. It covers the videos while the agent works"
-                     + ("" if info.get("agent") == "linked" else ", once it is linked: run agent link"))
+    lines.append("ok         running. It covers the videos while the agent works"
+                 + ("" if info.get("agent") == "linked" else ", once it is linked: run agent link"))
     return finish(args, report, lines)
 
 
@@ -963,9 +959,7 @@ def cmd_install(args: argparse.Namespace) -> int:
     put_on(phone, apk, args.replace)
     switch_on(phone)
     info = wait_until_running(phone)
-    if info.get("popups") == "true":
-        print(f"Nomoredoom {info.get('version')} is on. Limit: {info.get('limit_min')} minutes of Reels, Shorts and TikTok per sitting.")
-    elif info.get("agent") == "linked":
+    if info.get("agent") == "linked":
         print(f"Nomoredoom {info.get('version')} is on. It covers Reels, Shorts and TikTok while Claude Code is working.")
     else:
         print(f"Nomoredoom {info.get('version')} is on. It covers Reels, Shorts and TikTok while Claude Code is working, "
@@ -976,7 +970,7 @@ def cmd_install(args: argparse.Namespace) -> int:
         try:
             print(push_gags(phone, DEFAULT_GAGS))
         except Problem as problem:
-            print(f"The popups will show their lines without GIFs for now ({problem}). Try: python bin/nomoredoom.py gags push")
+            print(f"The memes' GIFs did not make it to the phone ({problem}). Try: python bin/nomoredoom.py gags push")
     wireless = wireless_state(phone)
     if wireless == "on":
         print(f"Wireless debugging is still on. {CLOSE_UP}")
@@ -1104,13 +1098,9 @@ def cmd_uninstall(args: argparse.Namespace) -> int:
 
 def on_screen(info: dict) -> str:
     """What Nomoredoom is drawing over the screen right now, in words."""
-    drawn = info.get("drawn", "-")
-    if "card" in drawn:
-        kind = {"hold": "a card to hold", "farewell": "the goodbye card",
-                "agent": "the card for while the agent works, with no X"}.get(info.get("card", ""), "a card")
-        x = {"ready": "its X is ready to press", "wait": "its X is still counting down"}.get(info.get("close", ""))
-        return f"{kind}, {x}" if x else kind
-    return "the small note at the top" if "pill" in drawn else "nothing"
+    if info.get("drawn") == "memes":
+        return f"the memes, while the agent works ({info.get('popped', '0')} landed so far)"
+    return "nothing"
 
 
 def cmd_status(args: argparse.Namespace) -> int:
@@ -1120,41 +1110,15 @@ def cmd_status(args: argparse.Namespace) -> int:
     elif info.get("connected") != "true":
         print("Nomoredoom is not running. Run: python bin/nomoredoom.py doctor")
     else:
-        used = int(info.get("sitting_s", 0))
         print(f"watching now : {info.get('watching')}")
-        if info.get("popups") == "true":
-            print(f"this sitting : {used // 60}:{used % 60:02d} of {info.get('limit_min')}:00")
-        else:
-            print("popups       : off (python bin/nomoredoom.py set popups on)")
         print(f"on screen    : {on_screen(info)}")
-        print(f"gifs on phone: {info.get('gifs_on_phone', '0')} ({info.get('gags')} jokes)")
+        print(f"gifs on phone: {info.get('gifs_on_phone', '0')} ({info.get('gags')} list)")
         print(f"today        : {info.get('today_s') or 'nothing yet'} (seconds)")
         print(f"rules        : {info.get('rules')}")
         if info.get("agent") == "linked":
             print(f"agent        : {'working' if info.get('agent_busy') == 'yes' else 'not working'} "
                   f"(last asked {info.get('agent_answer_s', '-')}s ago: {info.get('agent_check', '-')})")
     return 0 if info.get("connected") == "true" else 1
-
-
-def cmd_set(args: argparse.Namespace) -> int:
-    phone = connect(args)
-    if args.name in ("home", "popups"):
-        if args.value not in ("on", "off"):
-            raise Problem(f"{args.name} takes on or off")
-        reply = send(phone, "--ez", args.name, "true" if args.value == "on" else "false")
-    else:
-        if not args.value.isdigit():
-            raise Problem(f"{args.name} takes a number of minutes")
-        reply = send(phone, "--ei", args.name, args.value)
-    print(reply)
-    return 0
-
-
-def cmd_demo(args: argparse.Namespace) -> int:
-    send(connect(args), "--ez", "demo", "true")
-    print("Playing on the phone now, for about 20 seconds: a small note at the top, then three sample popups. "
-          "Nothing is counted. Run status while it plays to see what is on the screen.")
-    return 0
 
 
 VIEW_ROWS = (
@@ -1194,32 +1158,6 @@ def cmd_gags(args: argparse.Namespace) -> int:
     if not pack.is_file():
         raise Problem(f"{pack} is not a file")
     print(push_gags(connect(args), pack))
-    return 0
-
-
-def seconds_of(clock: str) -> int:
-    """'11:30' or '11' (whole minutes), as seconds."""
-    found = re.fullmatch(r"(\d{1,4})(?::([0-5]?\d))?", clock)
-    if not found:
-        raise Problem("skip takes minutes and seconds, like 11:30")
-    return int(found.group(1)) * 60 + int(found.group(2) or 0)
-
-
-def cmd_skip(args: argparse.Namespace) -> int:
-    total = seconds_of(args.to)
-    send(connect(args), "--ei", "skip_s", str(total))
-    print(f"This sitting now stands at {total // 60}:{total % 60:02d}.")
-    return 0
-
-
-def cmd_speed(args: argparse.Namespace) -> int:
-    print(send(connect(args), "--ei", "speed", str(args.times)))
-    return 0
-
-
-def cmd_reset(args: argparse.Namespace) -> int:
-    send(connect(args), "--ez", "reset", "true")
-    print("This sitting starts over at 0:00. Today's total stays as it was.")
     return 0
 
 
@@ -1773,7 +1711,7 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--apk", help="install this file instead of the published release")
     p.add_argument("--release", action="store_true", help="download the published release even when a local build exists")
     p.add_argument("--replace", action="store_true", help="remove a copy signed with another key first")
-    p.add_argument("--no-gifs", action="store_true", help="skip downloading the popups' GIFs; they show their lines alone")
+    p.add_argument("--no-gifs", action="store_true", help="skip downloading the memes' GIFs")
     p.add_argument("--get-adb", action="store_true", help="download Google's adb if this computer has none")
 
     add("on", cmd_on, "switch the app on")
@@ -1783,26 +1721,15 @@ def main(argv: list[str] | None = None) -> int:
     p = add("status", cmd_status, "what the app sees right now")
     p.add_argument("--json", action="store_true")
 
-    p = add("set", cmd_set, "change a setting: popups on|off, limit MINUTES, fresh MINUTES, home on|off")
-    p.add_argument("name", choices=["popups", "limit", "fresh", "home"])
-    p.add_argument("value")
-
-    add("demo", cmd_demo, "play the popups once on the phone")
     add("tree", cmd_tree, "list the named views showing in the watched app in front (for fixing the rules)")
 
     p = add("rules", cmd_rules, "push a rules file to the phone, or go back to the built-in one")
     p.add_argument("action", choices=["push", "reset"])
     p.add_argument("file", nargs="?")
 
-    p = add("gags", cmd_gags, "copy a jokes file and its GIFs to the phone (default: the built-in one), or remove them")
+    p = add("gags", cmd_gags, "copy a memes file and its GIFs to the phone (default: the built-in one), or remove them")
     p.add_argument("action", choices=["push", "reset"])
     p.add_argument("file", nargs="?")
-
-    p = add("skip", cmd_skip, "testing: jump this sitting to MM:SS")
-    p.add_argument("to")
-    p = add("speed", cmd_speed, "testing: count every watched second N times (resets when the app restarts)")
-    p.add_argument("times", type=int)
-    add("reset", cmd_reset, "testing: start the sitting over")
 
     p = add("agent", cmd_agent, "cover Reels, Shorts and TikTok while a coding agent is working: link, unlink, "
                                 "check, send working|done, and hook and watch (what Claude Code runs)")

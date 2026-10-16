@@ -22,7 +22,7 @@ import android.widget.TextView
  *  - small: a view with the player's name is showing but small (a shelf of thumbnails)
  *
  * Add `--ez tappable true` and a touch anywhere on the screen sends it back to
- * home, which is how the test can tell whether a touch got through a popup.
+ * home, which is how the test can tell whether a touch got through the memes.
  */
 class FakeActivity : Activity() {
 
