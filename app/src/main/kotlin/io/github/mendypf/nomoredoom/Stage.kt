@@ -9,8 +9,6 @@ import android.media.AudioAttributes
 import android.media.AudioFocusRequest
 import android.media.AudioManager
 import android.os.Build
-import android.os.Handler
-import android.os.Looper
 import android.provider.Settings
 import android.util.Log
 import android.util.TypedValue
@@ -49,7 +47,6 @@ internal class Stage(
     /** The jokes: which line and which GIF a card gets. */
     var gags: Gags = Gags.NONE
 
-    private val main = Handler(Looper.getMainLooper())
     private val windows = service.getSystemService(WindowManager::class.java)
     private val audio = service.getSystemService(AudioManager::class.java)
     private val themed = ContextThemeWrapper(service, R.style.Theme_Nomoredoom_Overlay)
@@ -66,11 +63,8 @@ internal class Stage(
     private var artState = NO_ART
     private var stampAt = Stamp.TOP_LEFT
 
-    /** The agent's card: every GIF on the phone, shuffled anew for each visit, and which one is showing. */
-    private var reel: List<String> = emptyList()
-    private var reelAt = 0
-    private var busyCard = false
-    private val nextInReel = Runnable { card?.let { showArt(it, reel.getOrNull(++reelAt % reel.size.coerceAtLeast(1))) } }
+    /** The agent's card: GIFs piling onto the screen while it is up. */
+    private var chaos: Chaos? = null
 
     private val focusRequest = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT)
         .setAudioAttributes(
@@ -91,7 +85,7 @@ internal class Stage(
                 dim?.let { windows.updateViewLayout(it, params(Kind.BACKDROP)) }
                 pill?.let { windows.updateViewLayout(it, params(Kind.PILL)) }
                 card?.let {
-                    layOut(it)
+                    if (chaos == null) layOut(it)
                     windows.updateViewLayout(it, params(Kind.CARD))
                 }
             }
@@ -122,12 +116,18 @@ internal class Stage(
     /**
      * The card as a test on a computer needs it: its words, its GIF (`name:playing`, `still`,
      * `loading`, `missing`, `broken` or `no-room`), where things are on screen, and whether the X
-     * can be pressed yet.
+     * can be pressed yet. For the agent's card: how many GIFs have landed, and where each one on
+     * screen sits (`middle x,middle y,tilt`, separated by `;`).
      */
     fun report(): Map<String, String> {
         val view = card ?: return emptyMap()
+        chaos?.let { pile ->
+            val out = linkedMapOf("line" to line, "gif" to pile.state, "popped" to "${pile.popped}")
+            out["spots"] = pile.spots().joinToString(";")
+            boxOf(view.findViewById(R.id.chaos_line))?.let { out["line_box"] = it.joinToString(",") }
+            return out
+        }
         val out = linkedMapOf("line" to line, "gif" to artState)
-        if (busyCard) out["reel"] = "${if (reel.isEmpty()) 0 else reelAt % reel.size + 1}/${reel.size}"
         boxOf(view.findViewById(R.id.card_holder))?.let { out["card_box"] = it.joinToString(",") }
         boxOf(view.findViewById(R.id.card_gif))?.let { out["gif_box"] = it.joinToString(",") }
         val close = view.findViewById<CloseButton>(R.id.card_close)
@@ -181,6 +181,10 @@ internal class Stage(
         }
         if (!replace && card != null) return
         card = remove(card)
+        if (next is Card.Busy) {
+            showChaos()
+            return
+        }
 
         val view = inflater.inflate(R.layout.overlay_card, FrameLayout(themed), false)
         val minutes = themed.resources.getQuantityString(R.plurals.minutes, next.minutes, next.minutes)
@@ -190,43 +194,46 @@ internal class Stage(
         view.findViewById<TextView>(R.id.card_stamp).text = themed.getString(R.string.stamp, next.minutes)
         view.findViewById<View>(R.id.card_panel).clipToOutline = true // rounds the picture's corners with the card's
 
-        // The joke: a line of its own, and a GIF if one is on the phone. The agent's card has one
-        // line of its own and plays every GIF on the phone in turn.
-        busyCard = next is Card.Busy
-        val gag = if (busyCard) null else gags.pick(next.over, next.id)
+        // The joke: a line of its own, and a GIF if one is on the phone.
+        val gag = gags.pick(next.over, next.id)
         val words = gag?.text(next.minutes)?.takeIf { it.isNotEmpty() }
         when {
-            busyCard -> caption.setText(R.string.card_agent)
             words != null -> caption.text = words
             next is Card.Farewell -> caption.setText(R.string.card_going_home)
         }
         line = caption.text.toString()
-        stampAt = if (busyCard) Stamp.OFF else gag?.stamp ?: Stamp.TOP_LEFT
-        reel = if (busyCard) {
-            gags.all.mapNotNull { it.media }.distinct().filter { art.file(it) != null }.shuffled()
-        } else {
-            emptyList()
-        }
-        reelAt = 0
+        stampAt = gag?.stamp ?: Stamp.TOP_LEFT
 
         when (next) {
             is Card.Tap -> close.start(0)
             is Card.Hold -> close.start(next.holdMs)
             is Card.Farewell -> close.visibility = View.GONE // it leaves by itself
-            is Card.Busy -> close.visibility = View.GONE // it leaves when the agent is done
+            is Card.Busy -> Unit // drawn by showChaos
         }
         close.onClose = onClosed
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             // What a screen reader says when the popup appears.
-            view.accessibilityPaneTitle = if (busyCard) line else "$minutes. $line"
+            view.accessibilityPaneTitle = "$minutes. $line"
         }
         layOut(view)
         windows.addView(view, params(Kind.CARD))
         view.alpha = 0f
         view.animate().alpha(1f).setDuration(FADE_MS).start()
         card = view
-        showArt(view, if (busyCard) reel.firstOrNull() else gag?.media)
+        showArt(view, gag?.media)
+    }
+
+    /** The agent's card: every GIF on the phone, shuffled anew for each visit, slammed onto the screen. It has no X. */
+    private fun showChaos() {
+        val view = inflater.inflate(R.layout.overlay_chaos, FrameLayout(themed), false)
+        line = themed.getString(R.string.card_agent)
+        artState = NO_ART
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) view.accessibilityPaneTitle = line
+        windows.addView(view, params(Kind.CARD))
+        card = view
+        val reel = gags.all.mapNotNull { it.media }.distinct().filter { art.file(it) != null }.shuffled()
+        chaos = Chaos(view, art, reel, { area }, motionAllowed()).also { it.start() }
     }
 
     /** Loads the card's GIF. Until it is there, and when it is not on the phone, the card shows the minutes in its place. */
@@ -240,7 +247,6 @@ internal class Stage(
         if (file == null) return
         art.load(file) { picture ->
             if (card !== view) return@load // that card is gone already
-            if (busyCard && reel.size > 1) main.postDelayed(nextInReel, if (picture == null) RETRY_REEL_MS else REEL_MS)
             if (picture == null) {
                 artState = "$name:broken"
                 return@load
@@ -248,10 +254,6 @@ internal class Stage(
             val image = view.findViewById<ImageView>(R.id.card_gif)
             (image.drawable as? Animatable)?.stop()
             image.setImageDrawable(picture)
-            if (busyCard && image.visibility == View.VISIBLE) {
-                image.alpha = 0.3f
-                image.animate().alpha(1f).setDuration(FADE_MS).start()
-            }
             if (!layOut(view)) {
                 artState = "$name:no-room"
                 return@load
@@ -306,7 +308,7 @@ internal class Stage(
 
         val fitted = gif
         image.visibility = if (fitted != null) View.VISIBLE else View.GONE
-        minutes.visibility = if (fitted != null || busyCard) View.GONE else View.VISIBLE
+        minutes.visibility = if (fitted != null) View.GONE else View.VISIBLE
         stamp.visibility = if (fitted != null && stampAt != Stamp.OFF) View.VISIBLE else View.GONE
         if (fitted != null) {
             image.layoutParams = image.layoutParams.apply { height = fitted.height }
@@ -376,9 +378,8 @@ internal class Stage(
     private fun remove(view: View?): View? {
         if (view != null) {
             if (view === card) {
-                main.removeCallbacks(nextInReel)
-                busyCard = false
-                reel = emptyList()
+                chaos?.stop()
+                chaos = null
             }
             view.animate().cancel()
             view.findViewById<View>(R.id.card_stamp)?.animate()?.cancel()
@@ -444,9 +445,6 @@ internal class Stage(
         const val TAG = "Nomoredoom"
         const val FADE_MS = 220L
 
-        /** How long each GIF stays on the agent's card, and how soon one that would not open is skipped. */
-        const val REEL_MS = 4_000L
-        const val RETRY_REEL_MS = 300L
         const val NO_ART = "-"
 
         /** The gap between the card and the edge of the space it may use. */

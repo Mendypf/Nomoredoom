@@ -554,7 +554,7 @@ def status(phone: Phone) -> dict:
 STATUS_FIELDS = (
     "version", "connected", "watching", "covered", "safe", "sitting_s", "limit_min", "fresh_min", "send_home", "popups", "speed",
     "card", "drawn", "line", "gif", "card_box", "gif_box", "close_at", "close", "gags", "gifs_on_phone", "today_s",
-    "rules", "packages", "reel", "agent", "agent_busy", "agent_check", "agent_answer_s", "look",
+    "rules", "packages", "popped", "spots", "line_box", "agent", "agent_busy", "agent_check", "agent_answer_s", "look",
 )
 
 
@@ -1225,8 +1225,8 @@ def cmd_reset(args: argparse.Namespace) -> int:
 
 # ---- the coding agent
 #
-# While the person's coding agent works, the phone covers Reels, Shorts and TikTok with one card that plays every
-# GIF in turn. The two never talk directly: the agent's hooks post one short line to a ntfy topic ("working 3f9a01c2"
+# While the person's coding agent works, the phone covers Reels, Shorts and TikTok and piles every GIF on it, one
+# after another. The two never talk directly: the agent's hooks post one short line to a ntfy topic ("working 3f9a01c2"
 # or "done 3f9a01c2", the tag telling two sessions apart), and the phone asks that topic for its last 20 minutes
 # while a short video is in front. A session that stops posting (a crash, a laptop asleep) drops out of that window
 # by itself, so a working session posts "working" again every few minutes.

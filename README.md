@@ -4,16 +4,17 @@ I don't like doom scrolling while I'm working, so blocking short videos is
 how I stop it. It keeps me focused on the task at hand.
 
 Nomoredoom is a small Android app that does the blocking. While Claude Code is
-working on your computer, Instagram Reels, YouTube Shorts and TikTok are
-covered by one card that plays memes one after another. The card has no X, and
-it goes away when Claude is done.
+working on your computer, opening Instagram Reels, YouTube Shorts or TikTok
+covers the video, and memes slam onto the screen one after another, at random
+spots and angles, piling on top of each other. There is no X, and it all goes
+away when Claude is done.
 
 The rest of the time it leaves your videos alone.
 
 Installing it takes an AI agent that can reach your phone. One that runs on
 the phone itself can, like Hermes inside Termux. So can one on your computer,
 like Claude Code, Codex or Cursor. You tell the agent to install Nomoredoom
-from this repo. It puts a 78 KB app on the phone and switches it on. You never
+from this repo. It puts an 82 KB app on the phone and switches it on. You never
 open Android Studio. Your part, once: you switch on one setting and read the
 agent a six-digit code.
 
@@ -97,10 +98,11 @@ From then on, a Claude Code session posts "working" to the topic at the first
 tool it uses in a turn, and "done" when the turn ends. Quick answers that use
 no tools post nothing. While Reels, Shorts or TikTok is in front, the phone
 asks the topic whether any session is working: once when it opens, then every
-10 seconds. When one is, the card comes up within a few seconds. It has no
-X, it plays every GIF on the phone for 4 seconds each under the line "Stop
-doom scrolling", and it asks Android to pause the video's sound. About 10
-seconds after Claude finishes, it is gone.
+10 seconds. When one is, the video is covered within a few seconds and the
+GIFs on the phone start landing on it: seven in the first second or two, then
+one a second, with never more than nine on screen. The line "Stop doom
+scrolling" lands on top of them. There is no X, and it asks Android to pause
+the video's sound. About 10 seconds after Claude finishes, it is gone.
 
 Stopping Claude yourself counts as finished too: Esc in the terminal, or the
 stop button in VS Code or the desktop app. Claude Code runs no hook for that,
@@ -309,7 +311,7 @@ Installing by hand on the phone keeps Android's own screens.
 
 ### What stays on the phone
 
-One app of 78 KB whose one permission is internet, one accessibility switch
+One app of 82 KB whose one permission is internet, one accessibility switch
 turned on for it, and 27 GIFs in the app's own folder.
 
 The program you paired stays on a list called "Paired devices". That list

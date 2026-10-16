@@ -7,11 +7,11 @@ metadata: { "includeInPrompt": true }
 # Nomoredoom
 
 ## Purpose
-Nomoredoom is a 78 KB Android app. It is one accessibility service that Android wakes only for changes in Instagram,
+Nomoredoom is an 82 KB Android app. It is one accessibility service that Android wakes only for changes in Instagram,
 YouTube or TikTok. Linked to the person's coding agent, it covers those videos the whole time the agent is working:
-one card with no X that plays every meme GIF in turn and goes when the agent is done. The rest of the time it leaves
-the videos alone. Popups past a time limit are built in too, off unless the person asks for them: a card with a meme
-GIF, the minutes stamped on it, one line, and an X that is a countdown first.
+meme GIFs slam onto the screen one after another, at random spots and angles, with no X, and all go when the agent is
+done. The rest of the time it leaves the videos alone. Popups past a time limit are built in too, off unless the
+person asks for them: a card with a meme GIF, the minutes stamped on it, one line, and an X that is a countdown first.
 You install it and talk to it through adb, the door Android keeps for programs. The person does not open Android
 Studio or build anything.
 
@@ -71,7 +71,7 @@ For an agent on the phone itself (inside Termux) or on a computer on the same Wi
 uses Android's Wireless debugging, which needs Android 11 or newer and the phone on Wi-Fi.
 1. Say what is about to happen, then ask two things and wait for both answers. Tell the person:
    - A small app goes onto the phone. While Claude Code (or another coding agent) works on their computer, it covers
-     Reels, Shorts and TikTok with one card of memes. The rest of the time it leaves them alone.
+     Reels, Shorts and TikTok with a pile of memes. The rest of the time it leaves them alone.
    - You switch on Android's accessibility service for it from here. Done by hand, Android shows a box at that point
      saying such a service can view and control the screen. On this path the box does not show, so say it now. This
      service asks those three apps which screen is in front. It asks for no text. Its one permission is internet,
@@ -163,8 +163,8 @@ For a person who uses Claude Code on a computer. The phone needs Nomoredoom alre
 or Wireless debugging as in the install).
 1. Say what will change and wait for a yes:
    - Their phone will ask a free message service, ntfy.sh, whether Claude Code is working, every 10 seconds and only
-     while Reels, Shorts or TikTok is in front. While it is, those three are covered by one card with no X that plays
-     the memes in turn. It goes about 10 seconds after Claude finishes. Home still works.
+     while Reels, Shorts or TikTok is in front. While it is, those three are covered, with no X, and memes slam onto
+     the screen one after another. It goes about 10 seconds after Claude finishes. Home still works.
    - Claude Code on this computer gets three hooks in their own settings file, `~/.claude/settings.json`. They post
      "working" or "done" and an eight-letter tag to a topic with a random name, and nothing else. The file as it was
      is kept next to it, ending in `.before-nomoredoom`. While a session works, a small watcher reads that session's

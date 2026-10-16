@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    The agent's card: a solid backdrop, so the video is gone, with GIFs slammed onto it anywhere
+    and at any angle (Chaos.kt adds them to chaos_pile) and the line on top of them all.
+    It has no X: it goes when the agent is done. Leaving is the phone's own Home gesture.
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/chaos_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_backdrop"
+    android:clickable="true"
+    android:importantForAccessibility="no"
+    android:layoutDirection="ltr">
+
+    <FrameLayout
+        android:id="@+id/chaos_pile"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:importantForAccessibility="no" />
+
+    <TextView
+        android:id="@+id/chaos_line"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginHorizontal="24dp"
+        android:background="@drawable/bg_stamp"
+        android:elevation="16dp"
+        android:fontFamily="sans-serif-black"
+        android:gravity="center"
+        android:includeFontPadding="false"
+        android:paddingHorizontal="18dp"
+        android:paddingVertical="10dp"
+        android:rotation="-4"
+        android:text="@string/card_agent"
+        android:textColor="@color/stamp_text"
+        android:textSize="32sp" />
+</FrameLayout>

@@ -478,20 +478,23 @@ def main() -> int:
     state = run.app()
     run.check("the card has no X", "close_at" not in state, str(state))
     run.check("with its line", state.get("line") == "Stop doom scrolling", state.get("line", ""))
-    run.wait("its first GIF plays", lambda s: s.get("gif", "").endswith(":playing"), 5)
+    run.wait("its first GIF slams on, playing", lambda s: s.get("gif", "").endswith(":playing") and int(s.get("popped", 0)) >= 1, 5)
+    held = int(run.app().get("sitting_s", -1))
+    run.wait("more pile on fast: six within a few seconds", lambda s: int(s.get("popped", 0)) >= 6, 6)
+    run.shot("11-agent-pile")
+    early = int(run.app().get("popped", 0))
+    run.wait("and they keep coming", lambda s: int(s.get("popped", 0)) >= max(early + 3, 13), 12)
     state = run.app()
-    first = state.get("reel")
-    held = int(state.get("sitting_s", -1))
-    run.wait("it plays the next GIF a few seconds later",
-             lambda s: s.get("reel") not in (None, first) and s.get("gif", "").endswith(":playing"), 8)
-    later = run.app()
-    run.check("every GIF on the phone takes its turn", later.get("reel", "").endswith("/2"), str(later.get("reel")))
-    run.check("each GIF fills the card from edge to edge, with nothing around it",
-              all(box(s, "gif_box")[0] == box(s, "card_box")[0] and box(s, "gif_box")[2] == box(s, "card_box")[2]
-                  and box(s, "gif_box")[1] == box(s, "card_box")[1] for s in (state, later)),
-              f"{box(state, 'gif_box')} in {box(state, 'card_box')}, then {box(later, 'gif_box')} in {box(later, 'card_box')}")
-    run.check("no time is counted under it", int(run.app().get("sitting_s", -2)) == held)
+    spots = [[int(n) for n in spot.split(",")] for spot in state.get("spots", "").split(";") if spot]
     width, height = run.size()
+    run.check("the oldest go, so at most nine are on screen", 1 <= len(spots) <= 9, f"{len(spots)} on screen")
+    run.check("each one lands at its own spot", len({(x, y) for x, y, *_ in spots}) == len(spots), str(spots))
+    run.check("at its own angle, a little tilted", len({tilt for *_, tilt in spots}) > 1 and all(abs(tilt) <= 14 for *_, tilt in spots), str(spots))
+    run.check("and with its middle on the screen", all(0 <= x <= width and 0 <= y <= height for x, y, *_ in spots), str(spots))
+    line = box(state, "line_box")
+    run.check("the line sits on top in the middle",
+              abs((line[0] + line[2]) / 2 - width / 2) < width * 0.1 and abs((line[1] + line[3]) / 2 - height / 2) < height * 0.1, str(line))
+    run.check("no time is counted under it", int(run.app().get("sitting_s", -2)) == held)
     run.tap(f"{width // 2},{height // 2}")
     time.sleep(1)
     run.check("touching it does not close it", run.app().get("card") == "agent")

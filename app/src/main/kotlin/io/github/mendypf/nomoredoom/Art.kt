@@ -38,16 +38,19 @@ internal class Art(context: Context) {
         return ENDINGS.map { File(dir, "$name.$it") }.firstOrNull { it.isFile && it.length() in 1..MAX_BYTES }
     }
 
-    /** Opens the file on a side thread and hands the picture to [onReady] on the main thread; null if it would not open. */
-    fun load(file: File, onReady: (Drawable?) -> Unit) {
+    /**
+     * Opens the file on a side thread and hands the picture to [onReady] on the main thread; null if it would not open.
+     * A picture bigger than [maxSide] on its longest side is opened at that size.
+     */
+    fun load(file: File, maxSide: Int = MAX_SIDE, onReady: (Drawable?) -> Unit) {
         val thread = worker ?: Executors.newSingleThreadExecutor { Thread(it, "nomoredoom-art") }.also { worker = it }
         thread.execute {
             val drawable = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 runCatching {
                     ImageDecoder.decodeDrawable(ImageDecoder.createSource(file)) { decoder, info, _ ->
                         val longest = maxOf(info.size.width, info.size.height)
-                        if (longest > MAX_SIDE) {
-                            val scale = MAX_SIDE.toFloat() / longest
+                        if (longest > maxSide) {
+                            val scale = maxSide.toFloat() / longest
                             decoder.setTargetSize(
                                 (info.size.width * scale).toInt().coerceAtLeast(1),
                                 (info.size.height * scale).toInt().coerceAtLeast(1),
