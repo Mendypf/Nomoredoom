@@ -11,6 +11,10 @@ away when Claude is done.
 
 The rest of the time it leaves your videos alone.
 
+<p>
+  <img src="docs/gif-pile.gif" width="300" alt="A test phone opens YouTube Shorts while Claude Code works. A purple screen covers it at once and meme GIFs land on it one after another at random angles, under the line Stop doom scrolling.">
+</p>
+
 Installing it takes an AI agent that can reach your phone. One that runs on
 the phone itself can, like Hermes inside Termux. So can one on your computer,
 like Claude Code, Codex or Cursor. You tell the agent to install Nomoredoom
